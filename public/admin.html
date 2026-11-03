@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Command Center | Rotary Club of Honavar</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rotary: {
+                            blue: '#00246c',
+                            gold: '#e4a010',
+                            azure: '#005daa',
+                            dark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/index.html" class="flex items-center space-x-2 text-white font-heading font-extrabold text-lg">
+                    <div class="w-9 h-9 rounded-full bg-rotary-blue text-rotary-gold flex items-center justify-center text-lg border border-white/20">
+                        <i class="fa-solid fa-dharmachakra"></i>
+                    </div>
+                    <span>Rotary Honavar</span>
+                </a>
+                <span class="text-slate-600">|</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-rotary-gold flex items-center">
+                    <i class="fa-solid fa-shield-halved mr-1.5"></i> Admin Command Center
+                </span>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 text-xs">
+                    <span id="admin-name-display" class="font-bold text-slate-200">Loading...</span>
+                    <span class="px-2 py-0.5 rounded-full font-bold bg-amber-400 text-slate-950 text-[10px]">ADMIN</span>
+                </div>
+                <a href="/index.html" class="text-xs font-semibold text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Public Site
+                </a>
+                <button id="admin-logout-btn" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-rose-500 hover:text-rose-400 text-xs font-bold transition">
+                    <i class="fa-solid fa-power-off mr-1"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+        
+        <!-- Dashboard Top Banner & KPI Summary Cards -->
+        <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900">
+                        Club Operational Overview
+                    </h1>
+                    <p class="text-slate-500 text-xs mt-1">Real-time administrative metrics and service analytics.</p>
+                </div>
+                <button id="refresh-stats-btn" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-rotary-blue font-bold text-xs transition shadow-sm self-start sm:self-auto flex items-center space-x-1.5">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Refresh Data</span>
+                </button>
+            </div>
+
+            <!-- 5 KPI Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                
+                <!-- KPI 1: Projects -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 text-xs">
+                        <span class="font-bold uppercase tracking-wider">Projects</span>
+                        <i class="fa-solid fa-hand-holding-heart text-rotary-azure text-base"></i>
+                    </div>
+                    <div class="my-3">
+                        <div id="stat-projects-total" class="text-3xl font-extrabold font-heading text-slate-900">--</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            <span id="stat-projects-ongoing" class="font-bold text-emerald-600">0</span> Ongoing • 
+                            <span id="stat-projects-past" class="font-bold text-slate-600">0</span> Past
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Community Initiatives</span>
+                </div>
+
+                <!-- KPI 2: Events & Photos -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 text-xs">
+                        <span class="font-bold uppercase tracking-wider">Events</span>
+                        <i class="fa-solid fa-calendar-days text-rotary-blue text-base"></i>
+                    </div>
+                    <div class="my-3">
+                        <div id="stat-events-total" class="text-3xl font-extrabold font-heading text-slate-900">--</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            <span id="stat-events-published" class="font-bold text-blue-600">0</span> Published • 
+                            <span id="stat-events-drafts" class="font-bold text-amber-600">0</span> Drafts
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Club Activities & Photos</span>
+                </div>
+
+                <!-- KPI 3: Pending Memberships -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 text-xs">
+                        <span class="font-bold uppercase tracking-wider">Membership</span>
+                        <i class="fa-solid fa-user-clock text-amber-500 text-base"></i>
+                    </div>
+                    <div class="my-3">
+                        <div id="stat-memberships-pending" class="text-3xl font-extrabold font-heading text-amber-600">--</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            <span id="stat-members-active" class="font-bold text-slate-700">0</span> Active Rotarians
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-amber-600 font-bold">Applications to Review</span>
+                </div>
+
+                <!-- KPI 4: Civic Service Requests -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 text-xs">
+                        <span class="font-bold uppercase tracking-wider">Civic Requests</span>
+                        <i class="fa-solid fa-bullhorn text-rose-500 text-base"></i>
+                    </div>
+                    <div class="my-3">
+                        <div id="stat-service-unresolved" class="text-3xl font-extrabold font-heading text-rose-600">--</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            Citizen Reports Pending
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Needs Triage & Action</span>
+                </div>
+
+                <!-- KPI 5: Inquiries Inbox -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex items-center justify-between text-slate-400 text-xs">
+                        <span class="font-bold uppercase tracking-wider">Inbox</span>
+                        <i class="fa-solid fa-envelope text-emerald-600 text-base"></i>
+                    </div>
+                    <div class="my-3">
+                        <div id="stat-inbox-unread" class="text-3xl font-extrabold font-heading text-slate-900">--</div>
+                        <div class="text-[11px] text-slate-500 mt-1">
+                            Unread Inquiries
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Public Contact Form</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==================== TAB NAVIGATION ==================== -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="border-b border-slate-200 px-6 pt-4 flex space-x-2 sm:space-x-4 overflow-x-auto text-xs sm:text-sm font-bold">
+                <button class="admin-tab active py-3 px-4 border-b-2 border-rotary-blue text-rotary-blue transition flex items-center space-x-2" data-tab="events">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Events & Photos</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="service-requests">
+                    <i class="fa-solid fa-hand-holding-hand"></i>
+                    <span>Civic Requests</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="memberships">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>Applications</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="tasks">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Member Tasks</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="projects">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Projects</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="leaders">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Leadership</span>
+                </button>
+                <button class="admin-tab py-3 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition flex items-center space-x-2" data-tab="contacts">
+                    <i class="fa-solid fa-inbox"></i>
+                    <span>Inbox</span>
+                </button>
+            </div>
+
+            <!-- ==================== TAB 1: EVENTS & PHOTOS ==================== -->
+            <div id="tab-panel-events" class="p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Event Management & Photo Galleries</h3>
+                        <p class="text-xs text-slate-500">Publish events, toggle drafts, and upload photos directly to Vercel Blob.</p>
+                    </div>
+                    <button id="btn-create-event" class="px-4 py-2.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs transition shadow-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Create New Event</span>
+                    </button>
+                </div>
+
+                <div id="admin-events-list" class="space-y-4">
+                    <div class="py-12 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading events...
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 2: CIVIC SERVICE REQUESTS ==================== -->
+            <div id="tab-panel-service-requests" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Civic Service Requests Triage</h3>
+                        <p class="text-xs text-slate-500">Review community reports submitted by Honavar citizens and assign tasks.</p>
+                    </div>
+
+                    <!-- Filter pills -->
+                    <div class="flex flex-wrap gap-1.5 text-xs">
+                        <button class="sr-filter active px-3 py-1 rounded-full bg-slate-900 text-white font-bold" data-status="">All</button>
+                        <button class="sr-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="NEW">New</button>
+                        <button class="sr-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="UNDER_REVIEW">Under Review</button>
+                        <button class="sr-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="ACTION_TAKEN">Action Taken</button>
+                        <button class="sr-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="COMPLETED">Completed</button>
+                    </div>
+                </div>
+
+                <div id="admin-sr-list" class="space-y-4">
+                    <div class="py-12 text-center text-slate-400 text-xs">Loading service requests...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 3: MEMBERSHIP APPLICATIONS ==================== -->
+            <div id="tab-panel-memberships" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Membership Candidate Applications</h3>
+                        <p class="text-xs text-slate-500">Review complete applicant dossiers, eligibility criteria, and approve active members.</p>
+                    </div>
+
+                    <div class="flex gap-1.5 text-xs">
+                        <button class="m-filter active px-3 py-1 rounded-full bg-amber-500 text-white font-bold" data-status="PENDING">Pending Review</button>
+                        <button class="m-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="APPROVED">Approved</button>
+                        <button class="m-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="REJECTED">Rejected</button>
+                        <button class="m-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="">All</button>
+                    </div>
+                </div>
+
+                <div id="admin-memberships-list" class="space-y-4">
+                    <div class="py-12 text-center text-slate-400 text-xs">Loading membership applications...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB: MEMBER TASKS ==================== -->
+            <div id="tab-panel-tasks" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Member Tasks & Assignments</h3>
+                        <p class="text-xs text-slate-500">Assign community responsibilities to active Rotarians and track completion status.</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Filter pills -->
+                        <div class="flex flex-wrap gap-1.5 text-xs">
+                            <button class="task-filter active px-3 py-1 rounded-full bg-slate-900 text-white font-bold" data-status="">All</button>
+                            <button class="task-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="0">Pending</button>
+                            <button class="task-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="1">Completed</button>
+                        </div>
+
+                        <button id="btn-create-task" class="px-4 py-2.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs transition shadow-sm flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Assign Task</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="admin-tasks-list" class="space-y-3">
+                    <div class="py-12 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading tasks...
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 4: PROJECTS ==================== -->
+            <div id="tab-panel-projects" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Community Projects Management</h3>
+                        <p class="text-xs text-slate-500">Manage ongoing initiatives and showcase past community impact.</p>
+                    </div>
+                    <button id="btn-create-project" class="px-4 py-2.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs transition shadow-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Project</span>
+                    </button>
+                </div>
+
+                <div id="admin-projects-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-full py-12 text-center text-slate-400 text-xs">Loading projects...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 5: LEADERSHIP ROSTER ==================== -->
+            <div id="tab-panel-leaders" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Club Leadership Roster</h3>
+                        <p class="text-xs text-slate-500">Manage board members, officer positions, and designated display order.</p>
+                    </div>
+                    <button id="btn-create-leader" class="px-4 py-2.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs transition shadow-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Add Officer / Director</span>
+                    </button>
+                </div>
+
+                <div id="admin-leaders-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="col-span-full py-12 text-center text-slate-400 text-xs">Loading leaders...</div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 6: CONTACT INBOX ==================== -->
+            <div id="tab-panel-contacts" class="hidden p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold font-heading text-slate-900">Contact Inquiries Inbox</h3>
+                        <p class="text-xs text-slate-500">General inquiries submitted through the public website.</p>
+                    </div>
+                    <div class="flex gap-1.5 text-xs">
+                        <button class="cnt-filter active px-3 py-1 rounded-full bg-slate-900 text-white font-bold" data-status="">All</button>
+                        <button class="cnt-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="NEW">New</button>
+                        <button class="cnt-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="READ">Read</button>
+                        <button class="cnt-filter px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200" data-status="REPLIED">Replied</button>
+                    </div>
+                </div>
+
+                <div id="admin-contacts-list" class="space-y-3">
+                    <div class="py-12 text-center text-slate-400 text-xs">Loading contact messages...</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ==================== MODAL: CREATE / EDIT EVENT ==================== -->
+    <div id="event-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 relative my-auto">
+            <button id="event-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 id="event-modal-title" class="text-xl font-bold font-heading text-slate-900 mb-1">Create Event & Photo Gallery</h3>
+            <p class="text-xs text-slate-500 mb-6">Fill in details and upload high-res photos to Vercel Blob.</p>
+
+            <form id="event-form" class="space-y-4">
+                <input type="hidden" id="event-id">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Event Title *</label>
+                    <input type="text" id="event-title" required placeholder="e.g. Free Eye Health Camp 2026"
+                           class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Event Date *</label>
+                        <input type="date" id="event-date" required
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location *</label>
+                        <input type="text" id="event-location" required placeholder="e.g. Rotary Hall, Honavar"
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Category</label>
+                        <select id="event-category" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                            <option value="ongoing">Ongoing</option>
+                            <option value="past">Past</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Workflow Status</label>
+                        <select id="event-status" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Description *</label>
+                    <textarea id="event-desc" rows="3" required placeholder="Event summary, objectives, attendees..."
+                              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure"></textarea>
+                </div>
+
+                <!-- Publish Status Checkbox -->
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center space-x-2.5">
+                    <input type="checkbox" id="event-published" checked class="h-4 w-4 text-rotary-blue rounded">
+                    <label for="event-published" class="text-xs font-semibold text-slate-800 cursor-pointer">
+                        Publish to Public Website Immediately (Uncheck to keep as private draft)
+                    </label>
+                </div>
+
+                <!-- Multi-Photo Gallery Upload Area -->
+                <div class="border-t border-slate-100 pt-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-900 uppercase">
+                            Gallery Photos (Vercel Blob Direct Upload)
+                        </label>
+                        <span id="upload-status-indicator" class="text-[11px] text-slate-400"></span>
+                    </div>
+
+                    <input type="file" id="event-photo-file-input" multiple accept="image/jpeg,image/png,image/webp"
+                           class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-rotary-blue file:text-white hover:file:bg-blue-900 cursor-pointer">
+
+                    <!-- Instant Preview Grid -->
+                    <div id="event-photo-previews" class="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+                        <!-- Preview thumbnails rendered here with remove button before save -->
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex justify-end space-x-3">
+                    <button type="button" id="event-cancel-btn" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-100">
+                        Cancel
+                    </button>
+                    <button type="submit" id="event-save-btn" class="px-5 py-2 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs transition shadow-md">
+                        Save Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: CREATE / EDIT PROJECT ==================== -->
+    <div id="project-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+            <button id="project-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="project-modal-title" class="text-xl font-bold font-heading text-slate-900 mb-4">Add Community Project</h3>
+
+            <form id="project-form" class="space-y-4">
+                <input type="hidden" id="project-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Project Title *</label>
+                    <input type="text" id="project-title" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Category *</label>
+                    <select id="project-category" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                        <option value="ongoing">Ongoing Initiative</option>
+                        <option value="past">Past Impact</option>
+                    </select>
+                </div>
+                <!-- Project Cover Photo Upload Component -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase">
+                        Project Cover Photo
+                    </label>
+
+                    <!-- Hidden raw URL input (stores the uploaded Vercel Blob URL or manual URL) -->
+                    <input type="hidden" id="project-cover">
+
+                    <!-- Drag & Drop / File Select Box (shown when no image is selected) -->
+                    <div id="project-upload-dropzone" class="border-2 border-dashed border-slate-200 hover:border-rotary-blue rounded-2xl p-5 text-center transition bg-slate-50/50 hover:bg-blue-50/30 cursor-pointer">
+                        <input type="file" id="project-cover-file" accept="image/jpeg,image/png,image/webp" class="hidden">
+                        <div class="space-y-2 pointer-events-none">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-blue-100 text-rotary-blue flex items-center justify-center text-xl shadow-sm">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-slate-700 block">Choose an image from your computer</span>
+                                <span class="text-[11px] text-slate-400">JPG, PNG or WebP • Max 4.5 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Progress Bar (hidden by default) -->
+                    <div id="project-upload-progress-container" class="hidden space-y-1.5 p-3 rounded-xl bg-blue-50 border border-blue-100">
+                        <div class="flex items-center justify-between text-xs font-bold text-rotary-blue">
+                            <span id="project-upload-status-text" class="flex items-center">
+                                <i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Uploading to Vercel Blob...
+                            </span>
+                            <span id="project-upload-pct">0%</span>
+                        </div>
+                        <div class="w-full bg-blue-200/60 h-2 rounded-full overflow-hidden">
+                            <div id="project-upload-progress-bar" class="bg-rotary-blue h-full rounded-full transition-all duration-200" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Image Preview Card (hidden by default) -->
+                    <div id="project-preview-card" class="hidden p-3 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center gap-3.5">
+                        <div class="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                            <img id="project-preview-img" src="" alt="Project Cover" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <span id="project-preview-filename" class="text-xs font-bold text-slate-800 truncate block">image.jpg</span>
+                            <span id="project-preview-filesize" class="text-[11px] text-slate-400 block">-- KB</span>
+                            <span id="project-preview-badge" class="inline-flex items-center text-[10px] font-bold text-emerald-600 mt-0.5">
+                                <i class="fa-solid fa-circle-check mr-1"></i> Ready
+                            </span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button type="button" id="project-replace-img-btn" title="Replace image" class="p-2 rounded-lg text-slate-400 hover:text-rotary-blue hover:bg-slate-100 transition text-xs">
+                                <i class="fa-solid fa-arrow-rotate-right"></i>
+                            </button>
+                            <button type="button" id="project-remove-img-btn" title="Remove image" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition text-xs">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- URL Manual Fallback Accordion / Toggle -->
+                    <div class="pt-1">
+                        <button type="button" id="project-toggle-url-btn" class="text-[11px] font-semibold text-slate-400 hover:text-rotary-blue transition flex items-center gap-1">
+                            <i class="fa-solid fa-link text-[10px]"></i>
+                            <span>Or enter an external image URL manually</span>
+                        </button>
+                        <div id="project-url-input-container" class="hidden mt-2">
+                            <input type="url" id="project-manual-url" placeholder="https://..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Description *</label>
+                    <textarea id="project-desc" rows="4" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-rotary-blue text-white font-bold text-xs">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: CREATE / EDIT LEADER ==================== -->
+    <div id="leader-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+            <button id="leader-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="leader-modal-title" class="text-xl font-bold font-heading text-slate-900 mb-4">Add Club Officer</h3>
+
+            <form id="leader-form" class="space-y-4">
+                <input type="hidden" id="leader-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Officer Name *</label>
+                    <input type="text" id="leader-name" required placeholder="Rtn. Full Name" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Position *</label>
+                        <input type="text" id="leader-position" required placeholder="President, Secretary, etc." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Rotary Year *</label>
+                        <input type="text" id="leader-year" required value="2025-2026" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Display Order (1 = Top)</label>
+                        <input type="number" id="leader-order" value="1" min="1" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Photo URL</label>
+                        <input type="url" id="leader-image" placeholder="https://..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-rotary-blue text-white font-bold text-xs">Save Officer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: APPLICATION REVIEW ==================== -->
+    <div id="review-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+            <button id="review-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-xl font-bold font-heading text-slate-900 mb-1">Review Candidate</h3>
+            <p id="review-candidate-name" class="text-xs text-slate-500 mb-4 font-bold"></p>
+
+            <form id="review-form" class="space-y-4">
+                <input type="hidden" id="review-app-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Decision *</label>
+                    <select id="review-status" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold">
+                        <option value="APPROVED">APPROVE — Elevate to Active Member (1-Year Term)</option>
+                        <option value="REJECTED">REJECT — Decline Application</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Board Review Notes</label>
+                    <textarea id="review-notes" rows="3" placeholder="Enter reason or committee recommendations..."
+                              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-rotary-blue text-white font-bold text-xs">Confirm Decision</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: ASSIGN MEMBER TASK ==================== -->
+    <div id="task-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+            <button id="task-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="task-modal-title" class="text-xl font-bold font-heading text-slate-900 mb-1">Assign Member Task</h3>
+            <p class="text-xs text-slate-500 mb-5">Delegate a community initiative or civic duty to an active club Rotarian.</p>
+
+            <form id="task-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Assign To Member *</label>
+                    <select id="task-user-id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:ring-2 focus:ring-rotary-azure">
+                        <option value="">Select an active member...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Task Title *</label>
+                    <input type="text" id="task-title" required placeholder="e.g. Coordinate venue logistics for health camp"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Associated Project (Optional)</label>
+                        <input type="text" id="task-project" placeholder="e.g. Mega Health Camp"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Due Date (Optional)</label>
+                        <input type="date" id="task-due-date"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100">
+                    <button type="button" id="task-modal-cancel" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50">Cancel</button>
+                    <button type="submit" id="task-save-btn" class="px-5 py-2.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Assign Task</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin JavaScript Logic -->
+    <script type="module" src="/js/admin.js"></script>
+</body>
+</html>
+

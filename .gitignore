@@ -1,0 +1,31 @@
+# Security & Environment variables (NEVER commit to version control)
+.env
+.env.local
+.env.*
+!.env.example
+
+# Installed npm dependencies
+node_modules/
+
+# Local SQLite database files & backups
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Local test scratch folders
+scratch/
+photo/
+
+# Vercel deployment folder
+.vercel/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System temporary files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotary Club of Honavar | Service Above Self | RI District 3170</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rotary: {
+                            blue: '#00246c',
+                            gold: '#e4a010',
+                            azure: '#005daa',
+                            dark: '#0f172a',
+                            light: '#f8fafc'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- ==================== HEADER & NAVBAR ==================== -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 transition-all duration-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Brand / Logo -->
+                <a href="#home" class="flex items-center space-x-3 group">
+                    <div class="w-12 h-12 rounded-full bg-rotary-blue flex items-center justify-center text-rotary-gold text-2xl shadow-md group-hover:rotate-45 transition-transform duration-500">
+                        <i class="fa-solid fa-dharmachakra"></i>
+                    </div>
+                    <div>
+                        <span class="block font-heading font-extrabold text-xl text-rotary-blue tracking-tight leading-none">
+                            ROTARY CLUB OF HONAVAR
+                        </span>
+                        <span class="block text-xs font-semibold text-slate-500 tracking-wider uppercase mt-1">
+                            RI District 3170 • Chartered 1982
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden lg:flex items-center space-x-6 text-sm font-semibold text-slate-700">
+                    <a href="#about" class="hover:text-rotary-blue transition-colors">About</a>
+                    <a href="#leaders" class="hover:text-rotary-blue transition-colors">Leadership</a>
+                    <a href="#projects" class="hover:text-rotary-blue transition-colors">Projects</a>
+                    <a href="#events" class="hover:text-rotary-blue transition-colors">Gallery</a>
+                    <a href="#report-need" class="hover:text-rotary-blue transition-colors">Report a Need</a>
+                    <a href="#support" class="hover:text-rotary-blue transition-colors">Support</a>
+                    <a href="#contact" class="hover:text-rotary-blue transition-colors">Contact</a>
+                </nav>
+
+                <!-- Action CTA & Auth Buttons -->
+                <div class="hidden sm:flex items-center space-x-3">
+                    <button id="open-apply-btn" class="px-4 py-2 text-sm font-bold rounded-full bg-rotary-gold text-slate-950 hover:bg-amber-400 transition shadow-sm hover:shadow">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i> Join Us
+                    </button>
+                    
+                    <!-- Dynamic Auth Container -->
+                    <div id="nav-auth-container">
+                        <button id="open-login-btn" class="px-4 py-2 text-sm font-semibold rounded-full border border-slate-300 text-slate-700 hover:border-rotary-blue hover:text-rotary-blue transition">
+                            <i class="fa-solid fa-arrow-right-to-bracket mr-1.5"></i> Member Login
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="lg:hidden flex items-center space-x-2">
+                    <button id="mobile-menu-toggle" class="p-2.5 rounded-lg text-slate-600 hover:text-rotary-blue hover:bg-slate-100 transition focus:outline-none" aria-label="Toggle menu">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3">
+            <a href="#about" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">About Club</a>
+            <a href="#leaders" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Leadership</a>
+            <a href="#projects" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Projects</a>
+            <a href="#events" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Events & Gallery</a>
+            <a href="#report-need" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Report a Need</a>
+            <a href="#support" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Support & 80G</a>
+            <a href="#contact" class="mobile-link block py-2 text-base font-medium text-slate-700 hover:text-rotary-blue">Contact Us</a>
+            <div class="pt-3 border-t border-slate-100 flex flex-col space-y-2">
+                <button id="mobile-apply-btn" class="w-full py-2.5 text-center font-bold rounded-lg bg-rotary-gold text-slate-950">
+                    <i class="fa-solid fa-user-plus mr-1"></i> Join Us
+                </button>
+                <div id="mobile-auth-container">
+                    <button id="mobile-login-btn" class="w-full py-2.5 text-center font-semibold rounded-lg border border-slate-300 text-slate-700">
+                        <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Member Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO SECTION ==================== -->
+    <section id="home" class="relative bg-rotary-gradient text-white py-20 lg:py-28 overflow-hidden">
+        <!-- Background decorative circles -->
+        <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white/5 blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-rotary-gold/10 blur-2xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-rotary-gold text-xs font-bold uppercase tracking-wider border border-white/10">
+                        <i class="fa-solid fa-award"></i>
+                        <span>Rotary International District 3170</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold font-heading tracking-tight leading-tight">
+                        Transforming Communities, <span class="text-rotary-gold">Inspiring Tomorrow.</span>
+                    </h1>
+
+                    <p class="text-lg sm:text-xl text-slate-200 font-light max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                        Rotary Club of Honavar is a fellowship of business, professional, and community leaders dedicated to <em>Service Above Self</em> across coastal Uttara Kannada.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <a href="#report-need" class="w-full sm:w-auto px-6 py-3.5 rounded-full bg-rotary-gold hover:bg-amber-400 text-slate-950 font-bold text-center transition shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-hand-holding-hand"></i>
+                            <span>Report a Community Need</span>
+                        </a>
+                        <a href="#projects" class="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold text-center border border-white/20 transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-compass"></i>
+                            <span>Explore Our Projects</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Highlights Card -->
+                <div class="lg:col-span-5">
+                    <div class="glass-panel-dark rounded-2xl p-6 sm:p-8 text-white shadow-2xl relative">
+                        <div class="flex items-center justify-between pb-6 border-b border-white/10">
+                            <div>
+                                <span class="text-xs uppercase font-bold tracking-widest text-rotary-gold block">Official Club Motto</span>
+                                <h3 class="text-2xl font-bold font-heading">"Service Above Self"</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-rotary-gold text-xl">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                        </div>
+
+                        <!-- 4 Impact Counters -->
+                        <div class="grid grid-cols-2 gap-6 pt-6">
+                            <div class="border-l-2 border-rotary-gold pl-4">
+                                <div class="text-3xl font-extrabold font-heading text-white">40+</div>
+                                <div class="text-xs text-slate-300 font-medium mt-1">Years of Service (Since 1982)</div>
+                            </div>
+                            <div class="border-l-2 border-rotary-gold pl-4">
+                                <div class="text-3xl font-extrabold font-heading text-white">50,000+</div>
+                                <div class="text-xs text-slate-300 font-medium mt-1">Lives Directly Impacted</div>
+                            </div>
+                            <div class="border-l-2 border-rotary-gold pl-4">
+                                <div class="text-3xl font-extrabold font-heading text-white">10,000+</div>
+                                <div class="text-xs text-slate-300 font-medium mt-1">Mangroves & Trees Planted</div>
+                            </div>
+                            <div class="border-l-2 border-rotary-gold pl-4">
+                                <div class="text-3xl font-extrabold font-heading text-white">100%</div>
+                                <div class="text-xs text-slate-300 font-medium mt-1">Volunteer & Donation Driven</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                            <span><i class="fa-solid fa-location-dot mr-1 text-rotary-gold"></i> Honavar, Karnataka, India</span>
+                            <span><i class="fa-solid fa-calendar-check mr-1 text-rotary-gold"></i> Weekly Meet: Thu 7:30 PM</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ABOUT & 4-WAY TEST ==================== -->
+    <section id="about" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="max-w-3xl mx-auto text-center space-y-4">
+                <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure">Who We Are</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-rotary-blue font-heading">
+                    Over Four Decades of Dedicated Fellowship & Impact
+                </h2>
+                <p class="text-slate-600 leading-relaxed">
+                    Chartered in 1982 under Rotary International District 3170, the Rotary Club of Honavar brings together doctors, engineers, educators, entrepreneurs, and civic leaders. We channel our professional vocations toward sustainable healthcare, green ecology, coastal literacy, and community empowerment.
+                </p>
+            </div>
+
+            <!-- The 4-Way Test Interactive Grid -->
+            <div class="mt-16 bg-slate-50 border border-slate-200 rounded-3xl p-8 lg:p-12 shadow-sm">
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <span class="inline-block px-3 py-1 rounded-full bg-rotary-blue text-white text-xs font-bold tracking-wider uppercase mb-2">
+                        Guiding Ethical Compass
+                    </span>
+                    <h3 class="text-2xl font-bold font-heading text-slate-900">The Rotary 4-Way Test</h3>
+                    <p class="text-xs text-slate-500 mt-1">Of the things we think, say or do:</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-rotary-azure transition">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center font-bold text-lg mb-4">1</div>
+                        <h4 class="font-bold text-slate-900 text-base mb-1">Is it the TRUTH?</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Uncompromising integrity and transparency in all civic and personal interactions.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-rotary-azure transition">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center font-bold text-lg mb-4">2</div>
+                        <h4 class="font-bold text-slate-900 text-base mb-1">Is it FAIR to all concerned?</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Promoting equitable access, mutual respect, and social justice for all community members.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-rotary-azure transition">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center font-bold text-lg mb-4">3</div>
+                        <h4 class="font-bold text-slate-900 text-base mb-1">Will it build GOODWILL and BETTER FRIENDSHIPS?</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Fostering deep camaraderie, regional harmony, and international fellowship.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-rotary-azure transition">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center font-bold text-lg mb-4">4</div>
+                        <h4 class="font-bold text-slate-900 text-base mb-1">Will it be BENEFICIAL to all concerned?</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Ensuring enduring, positive value and sustainable outcomes for generations to come.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== LEADERSHIP TEAM ==================== -->
+    <section id="leaders" class="py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure">Governance & Vision</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-rotary-blue font-heading mt-1">
+                        Club Leadership (2025–2026)
+                    </h2>
+                </div>
+                <p class="text-slate-500 text-sm mt-2 md:mt-0 max-w-md">
+                    Dedicated Rotarians guiding our service projects, club fellowship, and humanitarian administration.
+                </p>
+            </div>
+
+            <!-- Dynamic Leaders Container -->
+            <div id="leaders-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Skeleton Loader -->
+                <div class="animate-pulse bg-white rounded-2xl p-6 border border-slate-200 text-center space-y-4">
+                    <div class="w-28 h-28 rounded-full bg-slate-200 mx-auto"></div>
+                    <div class="h-4 bg-slate-200 rounded w-3/4 mx-auto"></div>
+                    <div class="h-3 bg-slate-200 rounded w-1/2 mx-auto"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== PROJECTS ==================== -->
+    <section id="projects" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-2xl mx-auto mb-10 space-y-3">
+                <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure">Flagship Initiatives</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-rotary-blue font-heading">
+                    Community Service Projects
+                </h2>
+                <p class="text-slate-600 text-sm">
+                    Tangible, grassroots interventions driving health, livelihood, education, and ecological resilience.
+                </p>
+            </div>
+
+            <!-- Category Tabs -->
+            <div class="flex justify-center mb-12">
+                <div class="inline-flex p-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs sm:text-sm font-semibold">
+                    <button class="project-tab px-5 py-2 rounded-full transition bg-rotary-blue text-white shadow-sm" data-category="">
+                        All Projects
+                    </button>
+                    <button class="project-tab px-5 py-2 rounded-full transition text-slate-600 hover:text-rotary-blue" data-category="ongoing">
+                        Ongoing Initiatives
+                    </button>
+                    <button class="project-tab px-5 py-2 rounded-full transition text-slate-600 hover:text-rotary-blue" data-category="past">
+                        Past Impact
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Projects Grid -->
+            <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== EVENTS & PHOTO GALLERY ==================== -->
+    <section id="events" class="py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure">Club Activities</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-rotary-blue font-heading mt-1">
+                        Events & Multi-Photo Gallery
+                    </h2>
+                </div>
+                <p class="text-slate-500 text-sm mt-2 md:mt-0 max-w-md">
+                    Click on any photo thumbnail to open the interactive, high-resolution lightbox gallery.
+                </p>
+            </div>
+
+            <!-- Dynamic Events Grid -->
+            <div id="events-container" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==================== REPORT A NEED (CIVIC PORTAL) ==================== -->
+    <section id="report-need" class="py-20 bg-white border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                
+                <!-- Left: Civic Submission Form -->
+                <div class="lg:col-span-7 bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-sm">
+                    <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block mb-2">Civic Action Portal</span>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading">
+                        Report a Community Need
+                    </h3>
+                    <p class="text-slate-600 text-sm mt-2 mb-8 leading-relaxed">
+                        Are you aware of a broken civic facility, an underprivileged school needing kits, or a community health hazard in Honavar? Submit it here. Our club reviews every report.
+                    </p>
+
+                    <form id="service-request-form" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your Full Name *</label>
+                                <input type="text" id="sr-name" required placeholder="e.g. Ramesh Hegde"
+                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address *</label>
+                                <input type="email" id="sr-email" required placeholder="name@example.com"
+                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+                                <input type="tel" id="sr-phone" placeholder="+91 98765 43210"
+                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Specific Location / Ward *</label>
+                                <input type="text" id="sr-location" required placeholder="e.g. Kasarkod Beach Road, Ward 4"
+                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Describe the Need or Issue *</label>
+                            <textarea id="sr-description" rows="4" required placeholder="Please provide specific details about what is required, who is affected, and any urgency..."
+                                      class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm"></textarea>
+                        </div>
+
+                        <button type="submit" id="sr-submit-btn" class="w-full py-3.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-sm transition shadow-md flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Submit Service Request</span>
+                        </button>
+                    </form>
+
+                    <!-- Submission Success Confirmation Banner -->
+                    <div id="sr-success-card" class="hidden mt-6 p-6 rounded-2xl bg-emerald-50 border border-emerald-200">
+                        <div class="flex items-start space-x-3">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-xl mt-0.5"></i>
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-emerald-900 text-base">Service Request Registered</h4>
+                                <p class="text-xs text-emerald-700">Your report has been queued for community committee triage.</p>
+                                <div class="mt-3 p-3 bg-white rounded-lg border border-emerald-300 inline-block">
+                                    <span class="text-xs text-slate-500 block">Your Human-Readable Tracking Code:</span>
+                                    <span id="sr-generated-code" class="text-base font-extrabold text-rotary-blue tracking-wider font-mono">HON-SR-2026-XXXX</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Real-time Tracker Lookup -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-slate-900 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-rotary-gold text-slate-950 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold font-heading">Track a Request</h4>
+                                <p class="text-xs text-slate-400">Enter your code to view live resolution progress.</p>
+                            </div>
+                        </div>
+
+                        <form id="track-lookup-form" class="space-y-3">
+                            <input type="text" id="track-input-code" required placeholder="e.g. HON-SR-2026-7B8D"
+                                   class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 font-mono text-sm tracking-wide focus:outline-none focus:ring-2 focus:ring-rotary-gold uppercase">
+                            <button type="submit" class="w-full py-3 rounded-xl bg-rotary-gold hover:bg-amber-400 text-slate-950 font-bold text-sm transition">
+                                <i class="fa-solid fa-crosshairs mr-1"></i> Look Up Status
+                            </button>
+                        </form>
+
+                        <!-- Lookup Result Details -->
+                        <div id="track-result-container" class="hidden mt-6 pt-6 border-t border-slate-800 space-y-4 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Current Status:</span>
+                                <span id="track-status-pill" class="px-2.5 py-1 rounded-full font-bold uppercase text-[11px] bg-sky-500/20 text-sky-400">NEW</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block mb-0.5">Location:</span>
+                                <span id="track-location" class="font-semibold text-slate-200">--</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block mb-0.5">Issue Summary:</span>
+                                <p id="track-description" class="text-slate-300 italic">--</p>
+                            </div>
+                            <div id="track-notes-box" class="hidden bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                                <span class="text-rotary-gold font-bold block mb-1">Rotary Action Note:</span>
+                                <p id="track-admin-notes" class="text-slate-300">--</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trust & Fellowship Banner -->
+                    <div class="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-2">
+                        <div class="font-bold flex items-center space-x-1.5 text-sm">
+                            <i class="fa-solid fa-shield-halved text-amber-700"></i>
+                            <span>Privacy by Design Guarantee</span>
+                        </div>
+                        <p class="text-amber-800/90 leading-relaxed">
+                            Public tracking queries only return progress updates and location tags. Your personal phone and email remain strictly protected and confidential to the Rotary Club administration.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SUPPORT & 80G DONATIONS ==================== -->
+    <section id="support" class="py-20 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-rotary-blue rounded-3xl text-white p-8 lg:p-14 shadow-2xl relative overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    
+                    <div class="lg:col-span-7 space-y-4">
+                        <span class="inline-block px-3 py-1 rounded-full bg-white/10 text-rotary-gold text-xs font-bold tracking-wider uppercase">
+                            Support Community Service
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold font-heading text-white">
+                            Partner with Us to Create Lasting Impact
+                        </h2>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Every rupee contributed to the Rotary Club of Honavar directly funds dialysis assistance for rural patients, school kit drives, and coastal mangrove restoration.
+                        </p>
+                        
+                        <div class="p-4 bg-white/10 rounded-2xl border border-white/10 text-xs text-slate-200 flex items-start space-x-3">
+                            <i class="fa-solid fa-receipt text-rotary-gold text-base mt-0.5"></i>
+                            <div>
+                                <span class="font-bold text-white block">80G Income Tax Exemption:</span>
+                                Donations to Rotary Club of Honavar Charitable Trust are eligible for 50% tax deductions under Section 80G of the Indian Income Tax Act. Official receipts issued.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer Card -->
+                    <div class="lg:col-span-5 bg-white text-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-4">
+                        <h4 class="font-bold font-heading text-lg text-rotary-blue border-b border-slate-100 pb-3">
+                            <i class="fa-solid fa-building-columns mr-2 text-rotary-gold"></i> Direct Bank Transfer
+                        </h4>
+                        
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between py-1 border-b border-slate-100">
+                                <span class="text-slate-500">Account Name:</span>
+                                <span class="font-bold text-slate-900 text-right">Rotary Club of Honavar Trust</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-slate-100">
+                                <span class="text-slate-500">Bank:</span>
+                                <span class="font-bold text-slate-900">State Bank of India</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-slate-100">
+                                <span class="text-slate-500">Account No:</span>
+                                <span class="font-mono font-bold text-rotary-blue">38291048291</span>
+                            </div>
+                            <div class="flex justify-between py-1 border-b border-slate-100">
+                                <span class="text-slate-500">IFSC Code:</span>
+                                <span class="font-mono font-bold text-slate-900">SBIN0000843</span>
+                            </div>
+                            <div class="flex justify-between py-1">
+                                <span class="text-slate-500">Branch:</span>
+                                <span class="font-bold text-slate-900">Honavar Main Branch</span>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] text-slate-500 text-center italic mt-2">
+                            Please email transfer details to <strong class="text-slate-700">admin@rotaryhonavar.org</strong> for receipt issuance.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACT US ==================== -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                
+                <!-- Contact Info & Meeting Venue -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div>
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure">Get in Touch</span>
+                        <h2 class="text-3xl font-extrabold text-rotary-blue font-heading mt-1">Connect with Us</h2>
+                        <p class="text-slate-600 text-sm mt-2">
+                            Have questions about our initiatives or wish to visit our weekly fellowship meeting?
+                        </p>
+                    </div>
+
+                    <div class="space-y-4 text-sm text-slate-600">
+                        <div class="flex items-start space-x-3.5">
+                            <div class="w-9 h-9 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Club Meeting Hall:</span>
+                                <span>Rotary Hall, Sharavathi Circle, Honavar, Uttara Kannada, Karnataka - 581334</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3.5">
+                            <div class="w-9 h-9 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Weekly Fellowship Meeting:</span>
+                                <span>Every Thursday at 7:30 PM IST</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3.5">
+                            <div class="w-9 h-9 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Official Email:</span>
+                                <a href="mailto:contact@rotaryhonavar.org" class="text-rotary-azure hover:underline">contact@rotaryhonavar.org</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Embedded Google Map -->
+                    <div class="rounded-2xl overflow-hidden border border-slate-200 h-52 shadow-sm">
+                        <iframe title="Rotary Club Honavar Location"
+                                src="https://maps.google.com/maps?q=Honavar,Karnataka&t=&z=13&ie=UTF8&iwloc=&output=embed"
+                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="lg:col-span-7 bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-sm">
+                    <h3 class="text-2xl font-bold font-heading text-slate-900 mb-2">Send Us a Message</h3>
+                    <p class="text-slate-600 text-sm mb-6">Our club secretary will respond to your inquiry shortly.</p>
+
+                    <form id="contact-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your Name *</label>
+                            <input type="text" id="cnt-name" required placeholder="Full Name"
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your Email Address *</label>
+                            <input type="email" id="cnt-email" required placeholder="name@example.com"
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Your Message *</label>
+                            <textarea id="cnt-message" rows="4" required placeholder="How can we assist you?"
+                                      class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm"></textarea>
+                        </div>
+                        <button type="submit" id="cnt-submit-btn" class="w-full py-3.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-sm transition shadow-md">
+                            <i class="fa-solid fa-paper-plane mr-1.5"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-slate-900 text-white mt-auto border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                
+                <div class="md:col-span-2 space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full bg-rotary-blue flex items-center justify-center text-rotary-gold text-lg">
+                            <i class="fa-solid fa-dharmachakra"></i>
+                        </div>
+                        <span class="font-heading font-extrabold text-lg text-white">Rotary Club of Honavar</span>
+                    </div>
+                    <p class="text-slate-400 text-xs leading-relaxed max-w-sm">
+                        Part of Rotary International District 3170. Chartered in 1982 to advance world understanding, goodwill, and peace through the improvement of health, education, and the alleviation of poverty.
+                    </p>
+                </div>
+
+                <div>
+                    <h5 class="text-xs uppercase font-extrabold text-rotary-gold tracking-wider mb-3">Quick Navigation</h5>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#about" class="hover:text-white transition">About Our Club</a></li>
+                        <li><a href="#leaders" class="hover:text-white transition">Board of Directors</a></li>
+                        <li><a href="#projects" class="hover:text-white transition">Flagship Projects</a></li>
+                        <li><a href="#events" class="hover:text-white transition">Events & Photos</a></li>
+                        <li><a href="#report-need" class="hover:text-white transition">Report a Need</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-xs uppercase font-extrabold text-rotary-gold tracking-wider mb-3">Rotary Portals</h5>
+                    <ul class="space-y-2 text-xs text-slate-400">
+                        <li><a href="#" id="footer-member-link" class="hover:text-white transition">Member Portal</a></li>
+                        <li><a href="/admin.html" class="hover:text-white transition">Admin Command Center</a></li>
+                        <li><a href="https://www.rotary.org" target="_blank" rel="noopener" class="hover:text-white transition">Rotary International</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+                <p>&copy; 2026 Rotary Club of Honavar (RI District 3170). All rights reserved.</p>
+                <p class="mt-2 sm:mt-0 font-medium">Service Above Self • One Profits Most Who Serves Best</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ==================== INTERACTIVE LIGHTBOX MODAL ==================== -->
+    <div id="lightbox-modal" class="lightbox-modal hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
+        <button id="lightbox-close" class="absolute top-5 right-5 text-white/70 hover:text-white text-3xl focus:outline-none p-2 z-10 transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Previous Photo Button -->
+        <button id="lightbox-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition focus:outline-none z-10">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <!-- Next Photo Button -->
+        <button id="lightbox-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition focus:outline-none z-10">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div class="max-w-4xl max-h-[85vh] flex flex-col items-center">
+            <img id="lightbox-img" src="" alt="Enlarged photo" class="max-h-[75vh] w-auto max-w-full rounded-xl object-contain shadow-2xl">
+            <div class="mt-4 text-center">
+                <p id="lightbox-caption" class="text-slate-200 text-sm font-medium"></p>
+                <span id="lightbox-counter" class="text-xs text-slate-400 mt-1 inline-block font-mono">Photo 1 of 1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ENHANCED MEMBERSHIP APPLICATION MODAL ==================== -->
+    <div id="membership-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200 relative my-auto">
+            <button id="membership-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl focus:outline-none p-1 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="mb-6">
+                <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block">Fellowship & Service</span>
+                <h3 class="text-2xl font-extrabold text-rotary-blue font-heading mt-0.5">Apply for Club Membership</h3>
+                <p class="text-slate-500 text-xs mt-1">
+                    Join leaders across Honavar dedicating their skills and passion to humanitarian impact.
+                </p>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="membership-error" class="hidden p-3.5 mb-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"></div>
+
+            <form id="membership-form" class="space-y-4">
+                <!-- Section 1: Personal Details -->
+                <div class="border-b border-slate-100 pb-3 mb-2">
+                    <span class="text-xs font-bold text-slate-900 uppercase tracking-wider block">1. Personal Information</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name *</label>
+                        <input type="text" id="m-name" required placeholder="e.g. Rtn. Candidate Name"
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address *</label>
+                        <input type="email" id="m-email" required placeholder="candidate@example.com"
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Age (18+ only) *</label>
+                        <input type="number" id="m-age" min="18" max="100" required placeholder="Age"
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Phone Number</label>
+                        <input type="tel" id="m-phone" placeholder="+91 98765 43210"
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Profession / Occupation *</label>
+                        <input type="text" id="m-profession" required placeholder="Doctor, Engineer, Student, etc."
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                    </div>
+                </div>
+
+                <!-- Section 2: Membership Details -->
+                <div class="border-b border-slate-100 pb-3 pt-3 mb-2">
+                    <span class="text-xs font-bold text-slate-900 uppercase tracking-wider block">2. Motivation & Commitment</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Why do you want to join our Rotary Club? *</label>
+                    <textarea id="m-reason" rows="2" required placeholder="Describe your motivation for joining Rotary Club of Honavar..."
+                              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">What interests you about community service & volunteering? *</label>
+                    <textarea id="m-interests" rows="2" required placeholder="Particular causes or community impact goals..."
+                              class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Skills & Experience to Contribute *</label>
+                        <textarea id="m-skills" rows="2" required placeholder="Professional skills, organizing experience..."
+                                  class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Time You Can Dedicate *</label>
+                        <textarea id="m-time" rows="2" required placeholder="e.g. 4-6 hours weekly on weekends..."
+                                  class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Areas of Community Service of Interest *</label>
+                    <input type="text" id="m-service-areas" required placeholder="e.g. Environment, Youth Education, Dialysis Healthcare"
+                           class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                </div>
+
+                <!-- Explicit Task Willingness Checkbox -->
+                <div class="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200 flex items-start space-x-3">
+                    <input type="checkbox" id="m-task-willingness" required
+                           class="mt-0.5 h-4 w-4 rounded border-slate-300 text-rotary-blue focus:ring-rotary-azure cursor-pointer">
+                    <label for="m-task-willingness" class="text-xs text-slate-700 leading-snug cursor-pointer">
+                        <strong class="text-slate-900 block font-semibold">Community Responsibility Agreement *</strong>
+                        I agree and commit to actively accept, participate in, and complete community tasks assigned by the club.
+                    </label>
+                </div>
+
+                <!-- Password field (shown if visitor is not already authenticated) -->
+                <div id="m-password-group">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Create Account Password (min 6 chars) *</label>
+                    <input type="password" id="m-password" placeholder="Create a secure password to log in and track status"
+                           class="w-full px-3.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-xs">
+                </div>
+
+                <button type="submit" id="m-submit-btn" class="w-full py-3 rounded-xl bg-rotary-gold hover:bg-amber-400 text-slate-950 font-bold text-sm transition shadow-md">
+                    <i class="fa-solid fa-file-signature mr-1.5"></i> Submit Membership Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MEMBER LOGIN MODAL ==================== -->
+    <div id="login-modal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative">
+            <button id="login-modal-close" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 text-xl focus:outline-none p-1 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-full bg-rotary-blue text-rotary-gold flex items-center justify-center text-xl mx-auto mb-2">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold font-heading text-slate-900">Member & Admin Login</h3>
+                <p class="text-xs text-slate-500 mt-1">Sign in to access community tasks, membership records & club admin.</p>
+            </div>
+
+            <!-- Error Banner -->
+            <div id="login-error" class="hidden p-3 mb-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"></div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address</label>
+                    <input type="email" id="login-email" required placeholder="admin@rotaryhonavar.org"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm">
+                </div>
+                <button type="submit" id="login-submit-btn" class="w-full py-3 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-sm transition shadow-md">
+                    Sign In
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Application Logic -->
+    <script type="module" src="/js/main.js?v=20261102b"></script>
+</body>
+</html>
+

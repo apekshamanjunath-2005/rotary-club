@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Portal | Rotary Club of Honavar</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rotary: {
+                            blue: '#00246c',
+                            gold: '#e4a010',
+                            azure: '#005daa',
+                            dark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/index.html" class="flex items-center space-x-2 text-rotary-blue font-heading font-extrabold text-lg">
+                    <div class="w-9 h-9 rounded-full bg-rotary-blue text-rotary-gold flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-dharmachakra"></i>
+                    </div>
+                    <span>Rotary Honavar</span>
+                </a>
+                <span class="text-slate-300">|</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-rotary-azure">Member Portal</span>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 text-xs">
+                    <span id="member-name-display" class="font-bold text-slate-800">Loading...</span>
+                    <span id="member-role-badge" class="hidden px-2 py-0.5 rounded-full font-bold text-[10px]"></span>
+                </div>
+                <a href="/index.html" class="text-xs font-semibold text-slate-600 hover:text-rotary-blue transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Public Site
+                </a>
+                <button id="member-logout-btn" class="px-3 py-1.5 rounded-lg border border-slate-300 hover:border-rose-300 hover:text-rose-600 text-xs font-bold transition">
+                    <i class="fa-solid fa-power-off mr-1"></i> Sign Out
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+        <!-- ==================== INITIAL LOADING VIEW ==================== -->
+        <div id="member-loading-view" class="py-20 text-center text-slate-400 text-sm">
+            <i class="fa-solid fa-spinner fa-spin text-3xl text-rotary-azure mb-3 block"></i>
+            <span>Loading membership workspace...</span>
+        </div>
+
+        <!-- ==================== PENDING / REJECTED STATUS VIEW ==================== -->
+        <div id="member-status-view" class="hidden max-w-3xl mx-auto py-6">
+            <div class="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-sm text-center space-y-6">
+                <!-- Status Icon -->
+                <div id="status-icon-container" class="w-20 h-20 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-3xl shadow-inner border border-slate-200">
+                    <i id="status-icon" class="fa-solid fa-hourglass-half"></i>
+                </div>
+
+                <!-- Status Badge -->
+                <div>
+                    <span id="status-badge" class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    </span>
+                </div>
+
+                <!-- Heading -->
+                <h2 id="status-heading" class="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900">
+                </h2>
+
+                <!-- Status Message -->
+                <div id="status-message-box" class="text-slate-600 text-sm sm:text-base leading-relaxed space-y-3 max-w-xl mx-auto">
+                </div>
+
+                <!-- Admin Review Notes (if rejected or notes present) -->
+                <div id="status-notes-card" class="hidden text-left p-4 rounded-2xl border text-xs space-y-1 max-w-xl mx-auto">
+                    <span id="status-notes-title" class="font-bold block"></span>
+                    <p id="status-notes-content" class="text-slate-700"></p>
+                </div>
+
+                <!-- Applicant Metadata Grid -->
+                <div class="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-500 max-w-md mx-auto text-left">
+                    <div><span class="text-slate-400">Applicant:</span> <strong id="status-applicant-name" class="text-slate-700">--</strong></div>
+                    <div><span class="text-slate-400">Email:</span> <strong id="status-applicant-email" class="text-slate-700">--</strong></div>
+                    <div><span class="text-slate-400">Submitted:</span> <span id="status-submitted-date">--</span></div>
+                    <div><span class="text-slate-400">Club:</span> Rotary Club of Honavar</div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
+                    <a href="/index.html" class="px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+                        <i class="fa-solid fa-arrow-left mr-1.5"></i> Return to Public Site
+                    </a>
+                    <button id="status-logout-btn" class="px-5 py-2.5 rounded-full border border-slate-300 hover:border-rose-300 hover:text-rose-600 text-slate-600 text-xs font-bold transition">
+                        <i class="fa-solid fa-power-off mr-1.5"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ACTIVE MEMBER VIEW ==================== -->
+        <div id="member-active-view" class="hidden space-y-8">
+            <!-- Welcome Banner & Membership Validity Countdown Card -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                
+                <div class="lg:col-span-8 bg-gradient-to-r from-rotary-blue to-rotary-azure rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 text-rotary-gold text-xs font-bold uppercase tracking-wider mb-3">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>Active Rotarian In Good Standing</span>
+                        </div>
+                        <h1 class="text-2xl sm:text-3xl font-extrabold font-heading">
+                            Welcome, <span id="welcome-member-name">Rotarian</span>!
+                        </h1>
+                        <p class="text-slate-200 text-xs sm:text-sm mt-2 max-w-xl leading-relaxed">
+                            Thank you for your dedication to <em>Service Above Self</em>. Track your community task assignments, view civic requests assigned to you, and verify your membership status below.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-white/10 flex flex-wrap gap-4 text-xs text-slate-200">
+                        <div><span class="text-slate-400">Club:</span> Rotary Club of Honavar</div>
+                        <div><span class="text-slate-400">District:</span> RI District 3170</div>
+                        <div><span class="text-slate-400">Charter Year:</span> 1982</div>
+                    </div>
+                </div>
+
+                <!-- 1-Year Membership Countdown Card -->
+                <div class="lg:col-span-4 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Membership Term</span>
+                            <span class="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-600">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>Active</span>
+                            </span>
+                        </div>
+
+                        <div class="py-4 text-center">
+                            <div id="countdown-days" class="text-4xl font-extrabold font-heading text-rotary-blue">365</div>
+                            <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Days Remaining</div>
+                            <p class="text-[11px] text-slate-400 mt-2">
+                                Valid until <strong id="membership-end-date-display" class="text-slate-700">--</strong>
+                            </p>
+                        </div>
+
+                        <!-- Progress bar -->
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div id="membership-progress-bar" class="bg-rotary-gold h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 text-center">
+                        <span class="text-[11px] text-slate-400">Rotary Annual Cycle • Managed by Board</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Community Tasks Checklist Section -->
+            <section class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block">Action Items</span>
+                        <h2 class="text-xl sm:text-2xl font-bold font-heading text-slate-900 mt-0.5">
+                            My Assigned Community Tasks
+                        </h2>
+                    </div>
+                    
+                    <!-- Filter tabs -->
+                    <div class="inline-flex p-1 rounded-full bg-slate-100 text-xs font-semibold">
+                        <button id="task-filter-all" class="px-3.5 py-1.5 rounded-full bg-rotary-blue text-white transition">All Tasks</button>
+                        <button id="task-filter-pending" class="px-3.5 py-1.5 rounded-full text-slate-600 hover:text-rotary-blue transition">Pending</button>
+                        <button id="task-filter-completed" class="px-3.5 py-1.5 rounded-full text-slate-600 hover:text-rotary-blue transition">Completed</button>
+                    </div>
+                </div>
+
+                <!-- Task Items Container -->
+                <div id="tasks-container" class="space-y-3">
+                    <div class="py-8 text-center text-slate-400 text-xs">
+                        <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading your assigned tasks...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Civic Service Requests Assigned to Member -->
+            <section class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div>
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block">Civic Inspection</span>
+                        <h2 class="text-xl sm:text-2xl font-bold font-heading text-slate-900 mt-0.5">
+                            Civic Requests Assigned to Me
+                        </h2>
+                    </div>
+                    <span id="assigned-sr-count" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">0 Requests</span>
+                </div>
+
+                <div id="assigned-sr-container" class="space-y-3">
+                    <div class="py-6 text-center text-slate-400 text-xs">
+                        No community service requests are currently assigned to you for inspection.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <p>&copy; 2026 Rotary Club of Honavar (RI District 3170). Member Internal Workspace.</p>
+    </footer>
+
+    <script type="module" src="/js/member.js?v=20261102b"></script>
+</body>
+</html>
+
