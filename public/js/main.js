@@ -338,7 +338,7 @@ async function loadEvents() {
                                 ${escapeHtml(event.category || 'Event')}
                             </span>
                             <span class="text-xs font-semibold text-slate-400">
-                                <i class="fa-solid fa-camera mr-1 text-rotary-azure"></i>${photoCount} Photos
+                                <i class="fa-solid fa-camera mr-1 text-rotary-azure"></i>${photoCount} Photo${photoCount === 1 ? '' : 's'}
                             </span>
                         </div>
 

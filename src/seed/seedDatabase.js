@@ -92,9 +92,7 @@ async function seed() {
             status: 'completed',
             is_published: 1,
             photos: [
-                '/images/pink-rickshaw.jpg',
-                'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80',
-                'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=800&q=80'
+                '/images/pink-rickshaw.jpg'
             ]
         },
         {
