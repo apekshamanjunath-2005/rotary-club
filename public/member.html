@@ -122,6 +122,36 @@
 
         <!-- ==================== ACTIVE MEMBER VIEW ==================== -->
         <div id="member-active-view" class="hidden space-y-8">
+            <!-- Official Induction / Board Approval Message Banner -->
+            <div id="induction-welcome-card" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-6 sm:p-7 shadow-sm transition">
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex-shrink-0 flex items-center justify-center text-xl shadow-md">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div class="space-y-2 flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-200 text-emerald-900">
+                                    Official Board Approval Notice
+                                </span>
+                                <span id="induction-approved-date" class="text-xs text-emerald-800 font-semibold"></span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-[11px] font-medium text-emerald-700">Rotary Club of Honavar • Board of Directors</span>
+                                <button id="dismiss-induction-btn" type="button" class="text-emerald-700 hover:text-emerald-950 text-xs px-2 py-0.5 rounded-md hover:bg-emerald-200/60 transition" title="Dismiss message">
+                                    <i class="fa-solid fa-xmark mr-1"></i>Dismiss
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold font-heading text-emerald-950">
+                            Congratulations! Your Membership Has Been Approved
+                        </h3>
+                        <div id="induction-welcome-message" class="text-xs sm:text-sm text-emerald-900 leading-relaxed bg-white/80 p-4 rounded-2xl border border-emerald-200 font-medium whitespace-pre-line shadow-xs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Welcome Banner & Membership Validity Countdown Card -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                 
@@ -204,13 +234,13 @@
                 </div>
             </section>
 
-            <!-- Civic Service Requests Assigned to Member -->
+            <!-- Civic Service Requests & Community Inspections -->
             <section class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
                 <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                     <div>
-                        <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block">Civic Inspection</span>
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-rotary-azure block">Civic Requests</span>
                         <h2 class="text-xl sm:text-2xl font-bold font-heading text-slate-900 mt-0.5">
-                            Civic Requests Assigned to Me
+                            My Civic Requests & Community Inspections
                         </h2>
                     </div>
                     <span id="assigned-sr-count" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700">0 Requests</span>
@@ -218,7 +248,7 @@
 
                 <div id="assigned-sr-container" class="space-y-3">
                     <div class="py-6 text-center text-slate-400 text-xs">
-                        No community service requests are currently assigned to you for inspection.
+                        No community service requests are currently submitted by you or assigned for inspection.
                     </div>
                 </div>
             </section>
@@ -231,7 +261,7 @@
         <p>&copy; 2026 Rotary Club of Honavar (RI District 3170). Member Internal Workspace.</p>
     </footer>
 
-    <script type="module" src="/js/member.js?v=20261102b"></script>
+    <script type="module" src="/js/member.js?v=20261104a"></script>
 </body>
 </html>
 

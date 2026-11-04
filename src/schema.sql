@@ -93,13 +93,16 @@ CREATE TABLE IF NOT EXISTS service_requests (
     status TEXT NOT NULL DEFAULT 'NEW' CHECK(status IN ('NEW', 'UNDER_REVIEW', 'ACTION_TAKEN', 'COMPLETED', 'REJECTED')),
     admin_notes TEXT,
     assigned_member_id TEXT,
+    project_id TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (assigned_member_id) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (assigned_member_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_sr_tracking ON service_requests(tracking_code);
 CREATE INDEX IF NOT EXISTS idx_sr_status ON service_requests(status);
+CREATE INDEX IF NOT EXISTS idx_sr_project ON service_requests(project_id);
 
 -- 7. MEMBERSHIP APPLICATIONS TABLE
 CREATE TABLE IF NOT EXISTS membership_applications (

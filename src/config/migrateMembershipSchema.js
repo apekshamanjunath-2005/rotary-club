@@ -1,8 +1,9 @@
 /**
- * Safe SQLite Migration for membership_applications
+ * Safe SQLite Migration for Rotary Club Database
  * Inspects existing table schema using PRAGMA table_info and adds only missing columns.
  * Preserves all existing records and constraints.
  */
+
 async function migrateMembershipApplications(execute, query) {
     try {
         const columnsInfo = await query('PRAGMA table_info(membership_applications)');
@@ -36,5 +37,24 @@ async function migrateMembershipApplications(execute, query) {
     }
 }
 
-module.exports = { migrateMembershipApplications };
+async function migrateServiceRequests(execute, query) {
+    try {
+        const columnsInfo = await query('PRAGMA table_info(service_requests)');
+        const existingColumnNames = columnsInfo.map(col => col.name);
 
+        if (!existingColumnNames.includes('project_id')) {
+            await execute('ALTER TABLE service_requests ADD COLUMN project_id TEXT');
+            console.log('✅ Added missing project_id column to service_requests table.');
+            return { added: true };
+        }
+        return { added: false };
+    } catch (error) {
+        console.error('Safe migration error on service_requests:', error);
+        throw error;
+    }
+}
+
+module.exports = {
+    migrateMembershipApplications,
+    migrateServiceRequests
+};

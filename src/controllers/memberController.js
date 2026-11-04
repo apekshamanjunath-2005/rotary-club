@@ -323,15 +323,25 @@ exports.reviewApplication = async (req, res) => {
             return res.status(404).json({ success: false, error: 'Application not found.' });
         }
 
+        // Link user ID if missing on application
+        let targetUserId = application.user_id;
+        if (!targetUserId && application.email) {
+            const matchedUser = await queryOne('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [application.email]);
+            if (matchedUser) {
+                targetUserId = matchedUser.id;
+            }
+        }
+
         const statements = [
             {
                 sql: `UPDATE membership_applications
                       SET status = ?,
                           review_notes = ?,
+                          user_id = COALESCE(user_id, ?),
                           reviewed_at = datetime('now'),
                           updated_at = datetime('now')
                       WHERE id = ?`,
-                args: [status, review_notes || null, id]
+                args: [status, review_notes || null, targetUserId || null, id]
             }
         ];
 
@@ -340,10 +350,14 @@ exports.reviewApplication = async (req, res) => {
             statements.push({
                 sql: `UPDATE users
                       SET role = 'MEMBER',
-                          membership_end_date = date('now', '+1 year'),
+                          membership_end_date = CASE 
+                              WHEN membership_end_date IS NULL OR membership_end_date < date('now') 
+                              THEN date('now', '+1 year') 
+                              ELSE membership_end_date 
+                          END,
                           updated_at = datetime('now')
-                      WHERE id = ?`,
-                args: [application.user_id]
+                      WHERE id = ? OR LOWER(email) = LOWER(?)`,
+                args: [targetUserId, application.email]
             });
         }
 

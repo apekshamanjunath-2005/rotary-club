@@ -124,10 +124,11 @@ export const LeadersAPI = {
 export const ServicesAPI = {
     createRequest: (data) => apiFetch('/service-requests', { method: 'POST', body: data }),
     trackRequest: (code) => apiFetch(`/service-requests/track/${encodeURIComponent(code)}`),
-    getAllRequests: (status, assigned_to) => {
+    getAllRequests: (status, assigned_to, my_requests) => {
         const params = new URLSearchParams();
         if (status) params.append('status', status);
         if (assigned_to) params.append('assigned_to', assigned_to);
+        if (my_requests) params.append('my_requests', 'true');
         return apiFetch(`/service-requests?${params.toString()}`);
     },
     updateRequestStatus: (id, status, admin_notes) =>

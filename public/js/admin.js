@@ -69,6 +69,13 @@ function initNavbar() {
 
 // ==================== TAB SWITCHING ====================
 function initTabs() {
+    window.switchTab = (tabName) => {
+        const targetTab = document.querySelector(`.admin-tab[data-tab="${tabName}"]`);
+        if (targetTab) {
+            targetTab.click();
+        }
+    };
+
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', async () => {
             document.querySelectorAll('.admin-tab').forEach(t => {
@@ -300,6 +307,8 @@ window.removeEventPhoto = (index) => {
 };
 
 // ==================== TAB 2: CIVIC SERVICE REQUESTS TRIAGE ====================
+let allAdminServiceRequests = [];
+
 async function loadAdminServiceRequests(status = '') {
     const container = document.getElementById('admin-sr-list');
     if (!container) return;
@@ -307,6 +316,7 @@ async function loadAdminServiceRequests(status = '') {
     try {
         const data = await ServicesAPI.getAllRequests(status);
         const requests = data.requests || [];
+        allAdminServiceRequests = requests;
 
         if (requests.length === 0) {
             container.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs">No service requests matching filter.</div>`;
@@ -344,8 +354,25 @@ async function loadAdminServiceRequests(status = '') {
                     </div>
 
                     ${req.admin_notes ? `
-                        <div class="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 border border-slate-200">
-                            <strong>Internal Note:</strong> ${escapeHtml(req.admin_notes)}
+                        <div class="p-3 bg-amber-50/70 rounded-xl text-xs text-amber-950 border border-amber-200">
+                            <strong class="text-amber-900"><i class="fa-solid fa-clipboard-check mr-1 text-amber-700"></i>Internal / Public Note:</strong>
+                            <p class="mt-1 text-slate-800 whitespace-pre-line">${escapeHtml(req.admin_notes)}</p>
+                        </div>
+                    ` : ''}
+
+                    ${req.linked_project_id ? `
+                        <div class="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-900 border border-emerald-200 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-handshake-angle text-emerald-600 text-sm"></i>
+                                <div>
+                                    <span class="font-bold">Linked Community Project:</span>
+                                    <span class="font-semibold text-slate-800 ml-1">${escapeHtml(req.linked_project_title || 'Rotary Project')}</span>
+                                    <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">${escapeHtml(req.linked_project_category || 'ongoing')}</span>
+                                </div>
+                            </div>
+                            <button onclick="window.switchTab('projects')" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[11px] hover:bg-emerald-700 transition">
+                                View in Projects <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
                         </div>
                     ` : ''}
 
@@ -376,8 +403,12 @@ async function loadAdminServiceRequests(status = '') {
 window.updateSrStatus = async (id, status) => {
     if (!status) return;
     try {
-        await ServicesAPI.updateRequestStatus(id, status);
-        showToast(`Status updated to ${status}.`, 'success');
+        const res = await ServicesAPI.updateRequestStatus(id, status);
+        if (res.created_project) {
+            showToast(`Status updated to ${status}. Linked project "${res.created_project.title}" created automatically!`, 'success');
+        } else {
+            showToast(`Status updated to ${status}.`, 'success');
+        }
         await loadAdminServiceRequests();
         await loadAdminStats();
     } catch (err) {
@@ -386,11 +417,13 @@ window.updateSrStatus = async (id, status) => {
 };
 
 window.addSrNotesPrompt = async (id) => {
-    const notes = prompt('Enter administrative triage note / update for this request:');
+    const target = allAdminServiceRequests.find(r => r.id === id);
+    const existingNotes = target?.admin_notes || '';
+    const notes = prompt('Enter administrative triage note / update for this request:', existingNotes);
     if (notes === null) return;
     try {
-        await ServicesAPI.updateRequestStatus(id, undefined, notes);
-        showToast('Triage note updated.', 'success');
+        await ServicesAPI.updateRequestStatus(id, undefined, notes.trim());
+        showToast('Administrative note saved.', 'success');
         await loadAdminServiceRequests();
     } catch (err) {
         showToast(err.message, 'error');

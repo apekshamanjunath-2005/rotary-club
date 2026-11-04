@@ -1,7 +1,7 @@
 const { createClient } = require('@libsql/client');
 const fs = require('fs');
 const path = require('path');
-const { migrateMembershipApplications } = require('./migrateMembershipSchema');
+const { migrateMembershipApplications, migrateServiceRequests } = require('./migrateMembershipSchema');
 require('dotenv').config();
 
 // Load database connection URL and Auth Token from .env
@@ -68,6 +68,10 @@ async function initDatabase() {
             console.log(`📁 Connected to Local SQLite Database: ${dbInfo.host}`);
         }
 
+        // Run safe incremental migrations for existing tables first
+        await migrateMembershipApplications(execute, query);
+        await migrateServiceRequests(execute, query);
+
         const schemaPath = path.join(__dirname, '..', 'schema.sql');
         if (fs.existsSync(schemaPath)) {
             const schemaSql = fs.readFileSync(schemaPath, 'utf8');
@@ -82,8 +86,6 @@ async function initDatabase() {
             for (const statement of statements) {
                 await db.execute(statement);
             }
-            // Run safe incremental migrations for existing tables
-            await migrateMembershipApplications(execute, query);
             console.log(`✅ Database schema verified and active on ${dbInfo.type}.`);
         }
     } catch (error) {

@@ -31,6 +31,12 @@ function initNavbar() {
     document.getElementById('member-logout-btn')?.addEventListener('click', handleLogout);
     document.getElementById('status-logout-btn')?.addEventListener('click', handleLogout);
 
+    // Dismiss induction welcome notice
+    document.getElementById('dismiss-induction-btn')?.addEventListener('click', () => {
+        const card = document.getElementById('induction-welcome-card');
+        if (card) card.classList.add('hidden');
+    });
+
     // Task filter tab clicks
     document.getElementById('task-filter-all')?.addEventListener('click', () => setTaskFilter('all'));
     document.getElementById('task-filter-pending')?.addEventListener('click', () => setTaskFilter('pending'));
@@ -87,6 +93,7 @@ async function loadUserProfile() {
             if (activeView) activeView.classList.remove('hidden');
             if (statusView) statusView.classList.add('hidden');
 
+            renderInductionWelcome(user);
             updateMembershipCountdown(user.membership_end_date);
             await loadMemberTasks();
             await loadAssignedServiceRequests();
@@ -335,6 +342,36 @@ window.toggleTaskItem = async (taskId) => {
     }
 };
 
+function renderInductionWelcome(user) {
+    const card = document.getElementById('induction-welcome-card');
+    const msgElem = document.getElementById('induction-welcome-message');
+    const dateElem = document.getElementById('induction-approved-date');
+    if (!card || !msgElem) return;
+
+    const rawNotes = (user.review_notes || user.application?.review_notes || '');
+    const notes = typeof rawNotes === 'string' ? rawNotes.trim() : '';
+    const reviewedAt = user.application?.reviewed_at || user.reviewed_at;
+
+    if (dateElem) {
+        dateElem.textContent = reviewedAt ? `Approved on ${formatDate(reviewedAt)}` : 'Active Rotarian Term';
+    }
+
+    if (notes) {
+        msgElem.innerHTML = `
+            <div class="space-y-1">
+                <span class="font-bold text-emerald-950 block"><i class="fa-solid fa-message mr-1.5 text-emerald-600"></i>Message from Club Administration:</span>
+                <p class="text-slate-800 whitespace-pre-line">${escapeHtml(notes)}</p>
+            </div>
+        `;
+    } else {
+        msgElem.innerHTML = `
+            <p>Welcome to the Rotary Club of Honavar! Your membership application has been approved by the club administration. You are now an active Rotarian in good standing. Service Above Self!</p>
+        `;
+    }
+
+    card.classList.remove('hidden');
+}
+
 async function loadAssignedServiceRequests() {
     const container = document.getElementById('assigned-sr-container');
     const countBadge = document.getElementById('assigned-sr-count');
@@ -342,38 +379,93 @@ async function loadAssignedServiceRequests() {
     if (!user || !container) return;
 
     try {
-        const data = await ServicesAPI.getAllRequests(null, user.id);
+        // Fetch all service requests either submitted by the member or assigned for inspection
+        const data = await ServicesAPI.getAllRequests(null, null, true);
         const requests = data.requests || [];
 
-        if (countBadge) countBadge.textContent = `${requests.length} Requests`;
+        if (countBadge) countBadge.textContent = `${requests.length} Request${requests.length === 1 ? '' : 's'}`;
 
         if (requests.length === 0) {
             container.innerHTML = `
                 <div class="py-8 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-slate-100">
-                    No community service requests are currently assigned to you for inspection.
+                    <i class="fa-solid fa-inbox text-2xl text-slate-300 mb-2 block"></i>
+                    No community service requests are currently submitted by you or assigned for inspection.
                 </div>
             `;
             return;
         }
 
-        container.innerHTML = requests.map(req => `
-            <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="space-y-1 text-xs">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-mono font-bold text-rotary-blue tracking-wide">${escapeHtml(req.tracking_code)}</span>
-                        <span class="px-2 py-0.5 rounded-full font-bold uppercase text-[10px] bg-sky-100 text-sky-800">${req.status}</span>
+        const userEmail = (user.email || '').toLowerCase().trim();
+
+        container.innerHTML = requests.map(req => {
+            const isSubmittedByMe = (req.submitter_email && req.submitter_email.toLowerCase().trim() === userEmail);
+            const isAssignedToMe = (req.assigned_member_id === user.id);
+
+            const statusStyles = {
+                'NEW': 'bg-sky-100 text-sky-800',
+                'UNDER_REVIEW': 'bg-amber-100 text-amber-800',
+                'ACTION_TAKEN': 'bg-blue-100 text-blue-800',
+                'COMPLETED': 'bg-emerald-100 text-emerald-800',
+                'REJECTED': 'bg-rose-100 text-rose-800'
+            };
+
+            return `
+                <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3.5 hover:border-slate-300 transition">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="font-mono font-bold text-sm text-rotary-blue">${escapeHtml(req.tracking_code)}</span>
+                            <span class="px-2.5 py-0.5 rounded-full font-bold uppercase text-[10px] ${statusStyles[req.status] || 'bg-slate-100 text-slate-800'}">
+                                ${escapeHtml(req.status)}
+                            </span>
+                            ${isSubmittedByMe ? `
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-rotary-blue border border-blue-200">
+                                    <i class="fa-solid fa-user-pen mr-1"></i>My Complaint
+                                </span>
+                            ` : ''}
+                            ${isAssignedToMe ? `
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                    <i class="fa-solid fa-magnifying-glass mr-1"></i>Assigned Inspection
+                                </span>
+                            ` : ''}
+                        </div>
+                        <span class="text-xs text-slate-400">${formatDate(req.created_at)}</span>
                     </div>
-                    <p class="text-slate-800 font-medium">${escapeHtml(req.issue_description)}</p>
-                    <span class="text-slate-400"><i class="fa-solid fa-location-dot mr-1 text-rotary-azure"></i>${escapeHtml(req.location)}</span>
+
+                    <div class="space-y-1.5 text-xs">
+                        <p class="text-slate-900 font-semibold text-sm leading-relaxed">${escapeHtml(req.issue_description)}</p>
+                        <div class="flex flex-wrap gap-4 text-slate-500 pt-0.5">
+                            <span><i class="fa-solid fa-location-dot mr-1 text-rotary-azure"></i><strong>Location:</strong> ${escapeHtml(req.location)}</span>
+                            <span><i class="fa-solid fa-user mr-1 text-slate-400"></i><strong>Submitter:</strong> ${escapeHtml(req.submitter_name)}</span>
+                        </div>
+                    </div>
+
+                    ${req.admin_notes ? `
+                        <div class="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 space-y-1">
+                            <div class="flex items-center space-x-1.5 font-bold text-amber-900">
+                                <i class="fa-solid fa-clipboard-check text-amber-600"></i>
+                                <span>Rotary Admin Triage Update / Notes:</span>
+                            </div>
+                            <p class="text-slate-800 pl-4 whitespace-pre-line leading-relaxed">${escapeHtml(req.admin_notes)}</p>
+                        </div>
+                    ` : ''}
+
+                    ${req.linked_project_title ? `
+                        <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center space-x-2">
+                            <i class="fa-solid fa-handshake-angle text-emerald-600 text-sm"></i>
+                            <div>
+                                <span class="font-bold">Converted to Community Project:</span>
+                                <span class="font-semibold text-slate-800 ml-1">${escapeHtml(req.linked_project_title)}</span>
+                                <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">${escapeHtml(req.linked_project_category || 'ongoing')}</span>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
-                <div class="text-[11px] text-slate-400 sm:text-right">
-                    Sub: ${escapeHtml(req.submitter_name)}
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         console.error('Failed to load assigned requests:', err);
+        container.innerHTML = `<div class="py-6 text-center text-rose-500 text-xs">Failed to load civic requests.</div>`;
     }
 }
 
