@@ -14,6 +14,8 @@ import {
     MembershipAPI
 } from './api.js';
 
+import { uploadCivicPhoto, formatBytes } from './blobUpload.js';
+
 // ==================== GLOBAL LIGHTBOX STATE ====================
 let currentPhotos = [];
 let currentPhotoIndex = 0;
@@ -24,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initModals();
     initLightbox();
     initForms();
+    initCivicPhotoUpload();
 
     // Load dynamic data from APIs
     loadLeaders();
@@ -444,6 +447,118 @@ function prevPhoto() {
     updateLightbox();
 }
 
+// ==================== CIVIC PHOTO UPLOAD CONTROLLER ====================
+function initCivicPhotoUpload() {
+    const fileInput = document.getElementById('sr-photo-file');
+    const photoUrlInput = document.getElementById('sr-photo-url');
+    const dropzone = document.getElementById('sr-photo-dropzone');
+    const previewCard = document.getElementById('sr-photo-preview-card');
+    const previewImg = document.getElementById('sr-photo-preview-img');
+    const filenameEl = document.getElementById('sr-photo-filename');
+    const filesizeEl = document.getElementById('sr-photo-filesize');
+    const badgeEl = document.getElementById('sr-photo-badge');
+    const removeBtn = document.getElementById('sr-photo-remove-btn');
+    const errorBox = document.getElementById('sr-photo-error');
+    const errorText = document.getElementById('sr-photo-error-text');
+    const progressContainer = document.getElementById('sr-upload-progress-container');
+    const progressBar = document.getElementById('sr-upload-progress-bar');
+
+    if (!fileInput || !dropzone) return;
+
+    const showPhotoError = (msg) => {
+        if (errorBox && errorText) {
+            errorText.textContent = msg;
+            errorBox.classList.remove('hidden');
+        }
+        dropzone.classList.add('border-rose-400', 'bg-rose-50/50');
+    };
+
+    const clearPhotoError = () => {
+        if (errorBox) errorBox.classList.add('hidden');
+        dropzone.classList.remove('border-rose-400', 'bg-rose-50/50');
+    };
+
+    const resetPhotoUI = () => {
+        fileInput.value = '';
+        if (photoUrlInput) photoUrlInput.value = '';
+        if (dropzone) dropzone.classList.remove('hidden');
+        if (previewCard) previewCard.classList.add('hidden');
+        if (progressContainer) progressContainer.classList.add('hidden');
+        if (progressBar) progressBar.style.width = '0%';
+        clearPhotoError();
+    };
+
+    dropzone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    removeBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetPhotoUI();
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        clearPhotoError();
+
+        // 1. Validate file format (JPG, PNG, WebP)
+        const validFormats = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        if (!validFormats.includes(file.type.toLowerCase())) {
+            showPhotoError('Invalid image format. Please select a JPG, JPEG, PNG, or WebP photo.');
+            fileInput.value = '';
+            return;
+        }
+
+        // 2. Validate file size (max 5MB)
+        const maxBytes = 5 * 1024 * 1024;
+        if (file.size > maxBytes) {
+            const mb = (file.size / (1024 * 1024)).toFixed(1);
+            showPhotoError(`Image size (${mb} MB) exceeds maximum allowed limit of 5 MB.`);
+            fileInput.value = '';
+            return;
+        }
+
+        // Display immediate local thumbnail preview
+        const localUrl = URL.createObjectURL(file);
+        if (previewImg) previewImg.src = localUrl;
+        if (filenameEl) filenameEl.textContent = file.name;
+        if (filesizeEl) filesizeEl.textContent = formatBytes(file.size);
+        if (badgeEl) {
+            badgeEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1 text-rotary-blue"></i><span class="text-rotary-blue font-bold">Uploading photo evidence...</span>';
+        }
+
+        dropzone.classList.add('hidden');
+        previewCard.classList.remove('hidden');
+        if (progressContainer) progressContainer.classList.remove('hidden');
+        if (progressBar) progressBar.style.width = '10%';
+
+        try {
+            const uploadedUrl = await uploadCivicPhoto(file, (pct) => {
+                if (progressBar) progressBar.style.width = `${pct}%`;
+            });
+
+            if (photoUrlInput) photoUrlInput.value = uploadedUrl;
+            if (badgeEl) {
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-check mr-1 text-emerald-500"></i><span class="text-emerald-700 font-bold">Photo verified & permanently stored</span>';
+            }
+            if (progressContainer) progressContainer.classList.add('hidden');
+            showToast('Civic photo uploaded successfully.', 'success');
+        } catch (err) {
+            console.error('Photo upload failed:', err);
+            if (photoUrlInput) photoUrlInput.value = '';
+            if (badgeEl) {
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-1 text-rose-500"></i><span class="text-rose-700 font-bold">Upload failed</span>';
+            }
+            if (progressContainer) progressContainer.classList.add('hidden');
+            showPhotoError(`Photo upload failed: ${err.message}. Please retry.`);
+        }
+    });
+
+    window._resetCivicPhotoUI = resetPhotoUI;
+}
+
 // ==================== FORM HANDLERS ====================
 function initForms() {
     // 1. Service Request Submission
@@ -451,6 +566,26 @@ function initForms() {
     if (srForm) {
         srForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Photo upload is compulsory
+            const photoUrl = document.getElementById('sr-photo-url')?.value?.trim();
+            const photoError = document.getElementById('sr-photo-error');
+            const photoErrorText = document.getElementById('sr-photo-error-text');
+            const dropzone = document.getElementById('sr-photo-dropzone');
+
+            if (!photoUrl) {
+                if (photoError && photoErrorText) {
+                    photoErrorText.textContent = 'Photo upload is compulsory. Please attach a photo of the civic issue before submitting.';
+                    photoError.classList.remove('hidden');
+                }
+                if (dropzone) {
+                    dropzone.classList.add('border-rose-400', 'bg-rose-50/50');
+                    dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                showToast('Photo upload is compulsory for civic requests.', 'error');
+                return;
+            }
+
             const btn = document.getElementById('sr-submit-btn');
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Registering...`;
@@ -461,11 +596,13 @@ function initForms() {
                     submitter_email: document.getElementById('sr-email').value.trim(),
                     submitter_phone: document.getElementById('sr-phone').value.trim() || null,
                     location: document.getElementById('sr-location').value.trim(),
-                    issue_description: document.getElementById('sr-description').value.trim()
+                    issue_description: document.getElementById('sr-description').value.trim(),
+                    photo_url: photoUrl
                 };
 
                 const res = await ServicesAPI.createRequest(payload);
                 srForm.reset();
+                if (window._resetCivicPhotoUI) window._resetCivicPhotoUI();
 
                 // Show success card
                 const successCard = document.getElementById('sr-success-card');
@@ -475,7 +612,7 @@ function initForms() {
                     successCard.classList.remove('hidden');
                 }
 
-                showToast('Service request submitted successfully!', 'success');
+                showToast('Service request submitted successfully with photo evidence!', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
@@ -500,6 +637,9 @@ function initForms() {
             const descElem = document.getElementById('track-description');
             const notesBox = document.getElementById('track-notes-box');
             const notesElem = document.getElementById('track-admin-notes');
+            const photoBox = document.getElementById('track-photo-box');
+            const photoImg = document.getElementById('track-photo-img');
+            const photoLink = document.getElementById('track-photo-link');
 
             try {
                 const res = await ServicesAPI.trackRequest(code);
@@ -527,6 +667,14 @@ function initForms() {
                     notesBox.classList.remove('hidden');
                 } else if (notesBox) {
                     notesBox.classList.add('hidden');
+                }
+
+                if (req.photo_url && photoBox && photoImg) {
+                    photoImg.src = req.photo_url;
+                    if (photoLink) photoLink.href = req.photo_url;
+                    photoBox.classList.remove('hidden');
+                } else if (photoBox) {
+                    photoBox.classList.add('hidden');
                 }
 
                 showToast(`Request found: ${req.status}`, 'info');

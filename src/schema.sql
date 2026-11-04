@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     location TEXT NOT NULL,
     issue_description TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'NEW' CHECK(status IN ('NEW', 'UNDER_REVIEW', 'ACTION_TAKEN', 'COMPLETED', 'REJECTED')),
+    photo_url TEXT,
     admin_notes TEXT,
     assigned_member_id TEXT,
     project_id TEXT,

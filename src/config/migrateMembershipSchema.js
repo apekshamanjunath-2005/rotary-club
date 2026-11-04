@@ -45,9 +45,14 @@ async function migrateServiceRequests(execute, query) {
         if (!existingColumnNames.includes('project_id')) {
             await execute('ALTER TABLE service_requests ADD COLUMN project_id TEXT');
             console.log('✅ Added missing project_id column to service_requests table.');
-            return { added: true };
         }
-        return { added: false };
+
+        if (!existingColumnNames.includes('photo_url')) {
+            await execute('ALTER TABLE service_requests ADD COLUMN photo_url TEXT');
+            console.log('✅ Added missing photo_url column to service_requests table.');
+        }
+
+        return { success: true };
     } catch (error) {
         console.error('Safe migration error on service_requests:', error);
         throw error;

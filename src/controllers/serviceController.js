@@ -1,7 +1,103 @@
 const { query, queryOne, execute } = require('../config/db');
 const { generateTrackingCode } = require('../utils/codeGenerator');
+const { handleUpload } = require('@vercel/blob/client');
+const { put } = require('@vercel/blob');
 
 const VALID_STATUSES = ['NEW', 'UNDER_REVIEW', 'ACTION_TAKEN', 'COMPLETED', 'REJECTED'];
+
+/**
+ * POST /api/service-requests/upload
+ * Dual handler: Generates client upload token for direct browser upload or handles Vercel completion webhook
+ */
+exports.uploadHandler = async (req, res) => {
+    try {
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+            return res.status(503).json({
+                success: false,
+                error: 'Vercel Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in .env.'
+            });
+        }
+
+        const jsonResponse = await handleUpload({
+            body: req.body,
+            request: req,
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+            onBeforeGenerateToken: async (pathname) => {
+                return {
+                    allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
+                    maximumSizeInBytes: 5 * 1024 * 1024,
+                    tokenPayload: JSON.stringify({ publicCivicUpload: true })
+                };
+            },
+            onUploadCompleted: async ({ blob }) => {
+                console.log(`[Vercel Blob] Civic request photo uploaded: ${blob.url}`);
+            }
+        });
+
+        return res.json(jsonResponse);
+    } catch (error) {
+        console.error('Civic request uploadHandler error:', error);
+        return res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+/**
+ * POST /api/service-requests/upload-direct
+ * Direct server-side upload to Vercel Blob for base64 encoded photo uploads
+ */
+exports.uploadDirect = async (req, res) => {
+    try {
+        if (!process.env.BLOB_READ_WRITE_TOKEN) {
+            return res.status(503).json({
+                success: false,
+                error: 'Vercel Blob storage is not configured. Please set BLOB_READ_WRITE_TOKEN in .env.'
+            });
+        }
+
+        const { filename, contentType, base64Data } = req.body;
+        if (!base64Data) {
+            return res.status(400).json({
+                success: false,
+                error: 'No image data provided.'
+            });
+        }
+
+        const allowedMime = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        const cleanMime = (contentType || 'image/jpeg').toLowerCase();
+        if (!allowedMime.includes(cleanMime)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid file format. Allowed formats: JPG, PNG, WebP.'
+            });
+        }
+
+        const buffer = Buffer.from(base64Data, 'base64');
+        if (buffer.length > 5 * 1024 * 1024) {
+            return res.status(400).json({
+                success: false,
+                error: 'File size exceeds maximum allowed limit of 5 MB.'
+            });
+        }
+
+        const cleanFilename = (filename || 'civic-evidence.jpg').replace(/[^a-zA-Z0-9.-]/g, '_');
+        const pathname = `service-requests/${Date.now()}-${cleanFilename}`;
+
+        const blob = await put(pathname, buffer, {
+            access: 'public',
+            contentType: cleanMime,
+            token: process.env.BLOB_READ_WRITE_TOKEN
+        });
+
+        console.log(`[Vercel Blob] Direct upload completed: ${blob.url}`);
+        return res.status(201).json({
+            success: true,
+            url: blob.url
+        });
+    } catch (error) {
+        console.error('Civic request uploadDirect error:', error);
+        return res.status(500).json({ success: false, error: 'Failed to upload photo.' });
+    }
+};
 
 /**
  * POST /api/service-requests
@@ -9,12 +105,20 @@ const VALID_STATUSES = ['NEW', 'UNDER_REVIEW', 'ACTION_TAKEN', 'COMPLETED', 'REJ
  */
 exports.createServiceRequest = async (req, res) => {
     try {
-        const { submitter_name, submitter_email, submitter_phone, location, issue_description } = req.body;
+        const { submitter_name, submitter_email, submitter_phone, location, issue_description, photo_url } = req.body;
 
         if (!submitter_name || !submitter_email || !location || !issue_description) {
             return res.status(400).json({
                 success: false,
                 error: 'Name, email, location, and issue description are required.'
+            });
+        }
+
+        // Photo evidence is compulsory
+        if (!photo_url || typeof photo_url !== 'string' || !photo_url.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: 'Photo evidence is mandatory. Please upload a photo of the civic issue before submitting.'
             });
         }
 
@@ -41,8 +145,8 @@ exports.createServiceRequest = async (req, res) => {
         }
 
         await execute(
-            `INSERT INTO service_requests (id, tracking_code, submitter_name, submitter_email, submitter_phone, location, issue_description, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'NEW')`,
+            `INSERT INTO service_requests (id, tracking_code, submitter_name, submitter_email, submitter_phone, location, issue_description, photo_url, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'NEW')`,
             [
                 id,
                 trackingCode,
@@ -50,7 +154,8 @@ exports.createServiceRequest = async (req, res) => {
                 submitter_email.trim().toLowerCase(),
                 submitter_phone ? submitter_phone.trim() : null,
                 location.trim(),
-                issue_description.trim()
+                issue_description.trim(),
+                photo_url.trim()
             ]
         );
 
@@ -58,7 +163,8 @@ exports.createServiceRequest = async (req, res) => {
             success: true,
             message: 'Your service request has been submitted successfully.',
             tracking_code: trackingCode,
-            status: 'NEW'
+            status: 'NEW',
+            photo_url: photo_url.trim()
         });
 
     } catch (error) {
@@ -108,8 +214,8 @@ exports.trackServiceRequest = async (req, res) => {
         }
 
         const request = await queryOne(
-            `SELECT sr.tracking_code, sr.location, sr.issue_description, sr.status, sr.admin_notes, sr.created_at, sr.updated_at,
-                    p.id as linked_project_id, p.title as linked_project_title, p.category as linked_project_category
+            `SELECT sr.tracking_code, sr.location, sr.issue_description, sr.status, sr.admin_notes, sr.photo_url, sr.created_at, sr.updated_at,
+                    p.id as linked_project_id, p.title as linked_project_title, p.category as linked_project_category, p.cover_image as linked_project_cover_image
              FROM service_requests sr
              LEFT JOIN projects p ON sr.project_id = p.id
              WHERE sr.tracking_code = ?`,
@@ -247,15 +353,22 @@ exports.updateServiceRequestStatus = async (req, res) => {
             const newProjId = 'proj_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
             const adminId = req.user ? req.user.id : null;
             const projDate = new Date().toISOString().split('T')[0];
+            const projCover = existing.photo_url || null;
 
             await execute(
                 `INSERT INTO projects (id, title, description, category, cover_image, date, created_by_id)
-                 VALUES (?, ?, ?, 'ongoing', NULL, ?, ?)`,
-                [newProjId, projTitle, projDesc, projDate, adminId]
+                 VALUES (?, ?, ?, 'ongoing', ?, ?, ?)`,
+                [newProjId, projTitle, projDesc, projCover, projDate, adminId]
             );
 
             linkedProjectId = newProjId;
-            createdProject = { id: newProjId, title: projTitle, category: 'ongoing' };
+            createdProject = { id: newProjId, title: projTitle, category: 'ongoing', cover_image: projCover };
+        } else if (existing.project_id && existing.photo_url) {
+            // Ensure project cover image carries forward the civic photo if it was not set
+            await execute(
+                `UPDATE projects SET cover_image = COALESCE(cover_image, ?), updated_at = datetime('now') WHERE id = ?`,
+                [existing.photo_url, existing.project_id]
+            );
         } else if (targetStatus === 'COMPLETED' && existing.project_id) {
             // Keep project status aligned when civic request completes
             await execute(

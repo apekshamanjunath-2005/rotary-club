@@ -439,6 +439,21 @@ async function loadAssignedServiceRequests() {
                         </div>
                     </div>
 
+                    ${req.photo_url ? `
+                        <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <img src="${escapeHtml(req.photo_url)}" alt="Photo evidence" class="w-14 h-14 rounded-xl object-cover border border-slate-200 cursor-pointer" onclick="window.open('${escapeHtml(req.photo_url)}', '_blank')">
+                            <div class="text-xs space-y-0.5">
+                                <span class="font-bold text-slate-800 flex items-center space-x-1">
+                                    <i class="fa-solid fa-camera text-rotary-blue"></i>
+                                    <span>Photo Evidence Attached</span>
+                                </span>
+                                <a href="${escapeHtml(req.photo_url)}" target="_blank" class="text-rotary-blue underline text-[11px] font-semibold hover:text-blue-800">
+                                    View Full Photo &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     ${req.admin_notes ? `
                         <div class="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 space-y-1">
                             <div class="flex items-center space-x-1.5 font-bold text-amber-900">

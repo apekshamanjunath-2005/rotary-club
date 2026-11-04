@@ -390,6 +390,62 @@
                                       class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-rotary-azure text-sm"></textarea>
                         </div>
 
+                        <!-- Photo Upload Field (Compulsory) -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase">
+                                    Issue Photo Evidence * <span class="text-rose-500 font-bold">(Compulsory)</span>
+                                </label>
+                                <span class="text-[11px] text-slate-400">JPG, PNG, WebP (Max 5MB)</span>
+                            </div>
+
+                            <!-- Hidden file input & stored photo URL -->
+                            <input type="file" id="sr-photo-file" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden">
+                            <input type="hidden" id="sr-photo-url">
+
+                            <!-- Upload Dropzone / Button -->
+                            <div id="sr-photo-dropzone" class="border-2 border-dashed border-slate-300 hover:border-rotary-azure rounded-2xl p-5 text-center cursor-pointer transition bg-white group hover:bg-slate-50/50">
+                                <div class="space-y-1.5">
+                                    <div class="w-10 h-10 mx-auto rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center text-lg group-hover:scale-110 transition">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-800">
+                                        Click to upload photo evidence of the issue
+                                    </p>
+                                    <p class="text-[11px] text-slate-400">
+                                        Clear photo of damaged facility, road, or civic issue is required
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Live Photo Preview & Upload Status Card (Initially Hidden) -->
+                            <div id="sr-photo-preview-card" class="hidden mt-3 p-3 bg-white border border-slate-200 rounded-2xl flex items-center space-x-3.5 shadow-xs">
+                                <img id="sr-photo-preview-img" src="" alt="Issue photo preview" class="w-16 h-16 rounded-xl object-cover border border-slate-200 bg-slate-100 flex-shrink-0">
+                                <div class="flex-1 min-w-0 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span id="sr-photo-filename" class="text-xs font-bold text-slate-900 truncate block">photo.jpg</span>
+                                        <button type="button" id="sr-photo-remove-btn" class="text-slate-400 hover:text-rose-600 text-xs p-1" title="Remove photo">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                    <span id="sr-photo-filesize" class="text-[11px] text-slate-400 block">-- KB</span>
+                                    <div id="sr-photo-badge" class="inline-flex items-center text-[10px] font-bold">
+                                        <i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>
+                                        <span class="text-emerald-700">Photo attached & verified</span>
+                                    </div>
+                                    <div id="sr-upload-progress-container" class="hidden w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mt-1">
+                                        <div id="sr-upload-progress-bar" class="bg-rotary-azure h-full transition-all duration-300" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Compulsory Validation Error Alert -->
+                            <div id="sr-photo-error" class="hidden mt-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center space-x-2">
+                                <i class="fa-solid fa-triangle-exclamation text-rose-500 flex-shrink-0"></i>
+                                <span id="sr-photo-error-text">Photo upload is compulsory. Please attach a photo of the civic issue before submitting.</span>
+                            </div>
+                        </div>
+
                         <button type="submit" id="sr-submit-btn" class="w-full py-3.5 rounded-xl bg-rotary-blue hover:bg-blue-900 text-white font-bold text-sm transition shadow-md flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-paper-plane"></i>
                             <span>Submit Service Request</span>
@@ -450,6 +506,12 @@
                             <div id="track-notes-box" class="hidden bg-slate-800/80 p-3 rounded-xl border border-slate-700">
                                 <span class="text-rotary-gold font-bold block mb-1">Rotary Action Note:</span>
                                 <p id="track-admin-notes" class="text-slate-300">--</p>
+                            </div>
+                            <div id="track-photo-box" class="hidden">
+                                <span class="text-slate-400 block mb-1">Uploaded Photo Evidence:</span>
+                                <a id="track-photo-link" href="#" target="_blank" class="block rounded-xl overflow-hidden border border-slate-700 bg-slate-800 hover:opacity-90 transition">
+                                    <img id="track-photo-img" src="" alt="Civic issue photo" class="w-full h-32 object-cover">
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -845,7 +907,7 @@
     </div>
 
     <!-- Main JavaScript Application Logic -->
-    <script type="module" src="/js/main.js?v=20261102b"></script>
+    <script type="module" src="/js/main.js?v=20261104b"></script>
 </body>
 </html>
 

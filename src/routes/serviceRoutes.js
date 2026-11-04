@@ -5,6 +5,8 @@ const { authMiddleware, adminMiddleware, memberMiddleware } = require('../middle
 
 // Public endpoints (Declared first to avoid route precedence conflict)
 router.post('/', serviceController.createServiceRequest);
+router.post('/upload', serviceController.uploadHandler);
+router.post('/upload-direct', serviceController.uploadDirect);
 router.get('/track/:code', serviceController.trackServiceRequest);
 
 // Protected endpoints (Admin & Active Members can inspect list & details)

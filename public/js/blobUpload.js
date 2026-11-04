@@ -5,8 +5,8 @@
 
 import { AuthStorage } from './api.js';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 4.5 * 1024 * 1024; // 4.5 MB limit per photo
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB limit per photo
 
 /**
  * Format bytes into human-readable string
@@ -85,6 +85,54 @@ export async function uploadEventPhoto(file, onProgress = null) {
  */
 export async function uploadProjectPhoto(file, onProgress = null) {
     return uploadBlobFile(file, 'projects', onProgress);
+}
+
+/**
+ * Upload a civic service request photo directly to Vercel Blob
+ * Public upload for citizens submitting civic complaints
+ */
+export async function uploadCivicPhoto(file, onProgress = null) {
+    validateImageFile(file);
+
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onprogress = (e) => {
+            if (e.lengthComputable && typeof onProgress === 'function') {
+                onProgress(Math.round((e.loaded / e.total) * 40));
+            }
+        };
+
+        reader.onload = async () => {
+            try {
+                if (typeof onProgress === 'function') onProgress(50);
+                const base64Data = reader.result.split(',')[1];
+                const res = await fetch('/api/service-requests/upload-direct', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        contentType: file.type || 'image/jpeg',
+                        base64Data
+                    })
+                });
+
+                if (typeof onProgress === 'function') onProgress(90);
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to upload photo to storage.');
+                }
+
+                if (typeof onProgress === 'function') onProgress(100);
+                resolve(data.url);
+            } catch (err) {
+                reject(err);
+            }
+        };
+
+        reader.onerror = () => reject(new Error('Failed to read image file.'));
+        reader.readAsDataURL(file);
+    });
 }
 
 

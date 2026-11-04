@@ -353,6 +353,21 @@ async function loadAdminServiceRequests(status = '') {
                         </div>
                     </div>
 
+                    ${req.photo_url ? `
+                        <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                            <img src="${escapeHtml(req.photo_url)}" alt="Issue photo evidence" class="w-16 h-16 rounded-xl object-cover border border-slate-200 cursor-pointer hover:opacity-90 transition" onclick="window.open('${escapeHtml(req.photo_url)}', '_blank')">
+                            <div class="text-xs space-y-1">
+                                <span class="font-bold text-slate-800 flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-camera text-rotary-blue"></i>
+                                    <span>Citizen Photo Evidence</span>
+                                </span>
+                                <a href="${escapeHtml(req.photo_url)}" target="_blank" class="text-rotary-blue underline text-[11px] font-semibold hover:text-blue-800 inline-block">
+                                    Open Full Resolution Image <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                                </a>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     ${req.admin_notes ? `
                         <div class="p-3 bg-amber-50/70 rounded-xl text-xs text-amber-950 border border-amber-200">
                             <strong class="text-amber-900"><i class="fa-solid fa-clipboard-check mr-1 text-amber-700"></i>Internal / Public Note:</strong>
