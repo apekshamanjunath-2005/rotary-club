@@ -7,9 +7,13 @@ const { query, queryOne, execute } = require('../config/db');
 exports.getMyTasks = async (req, res) => {
     try {
         const tasks = await query(
-            `SELECT * FROM tasks
-             WHERE user_id = ?
-             ORDER BY completed ASC, created_at DESC`,
+            `SELECT t.*,
+                    COALESCE(p.title, t.project_title) as project_title,
+                    COALESCE(t.project_id, p.id) as project_id
+             FROM tasks t
+             LEFT JOIN projects p ON t.project_id = p.id
+             WHERE t.user_id = ?
+             ORDER BY t.completed ASC, t.created_at DESC`,
             [req.user.id]
         );
         res.json({ success: true, count: tasks.length, tasks });
@@ -46,7 +50,15 @@ exports.toggleTask = async (req, res) => {
             [newCompleted, id]
         );
 
-        const updated = await queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
+        const updated = await queryOne(
+            `SELECT t.*,
+                    COALESCE(p.title, t.project_title) as project_title,
+                    COALESCE(t.project_id, p.id) as project_id
+             FROM tasks t
+             LEFT JOIN projects p ON t.project_id = p.id
+             WHERE t.id = ?`,
+            [id]
+        );
         res.json({
             success: true,
             message: `Task marked as ${newCompleted === 1 ? 'completed' : 'incomplete'}.`,
@@ -60,16 +72,23 @@ exports.toggleTask = async (req, res) => {
 
 /**
  * POST /api/tasks (Admin only)
- * Assign a new task to a member
+ * Assign a new task to a member linked to a project
  */
 exports.createTask = async (req, res) => {
     try {
-        const { user_id, title, project_title, due_date } = req.body;
+        const { user_id, project_id, title, due_date } = req.body;
 
-        if (!user_id || !title) {
+        if (!user_id) {
             return res.status(400).json({
                 success: false,
-                error: 'user_id and title are required.'
+                error: 'user_id is required.'
+            });
+        }
+
+        if (!project_id && !title) {
+            return res.status(400).json({
+                success: false,
+                error: 'Project selection is mandatory.'
             });
         }
 
@@ -78,15 +97,38 @@ exports.createTask = async (req, res) => {
             return res.status(404).json({ success: false, error: 'Assigned member not found.' });
         }
 
+        let selectedProjectId = project_id || null;
+        let projectTitle = null;
+
+        if (selectedProjectId) {
+            const project = await queryOne('SELECT id, title FROM projects WHERE id = ?', [selectedProjectId]);
+            if (!project) {
+                return res.status(404).json({ success: false, error: 'Selected project not found.' });
+            }
+            projectTitle = project.title;
+        }
+
+        // The task title is either explicitly provided or defaults to the selected project's title
+        const taskTitle = (title && title.trim()) ? title.trim() : projectTitle;
+
         const id = 'tsk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
 
         await execute(
-            `INSERT INTO tasks (id, user_id, title, project_title, due_date, completed)
-             VALUES (?, ?, ?, ?, ?, 0)`,
-            [id, user_id, title.trim(), project_title ? project_title.trim() : null, due_date || null]
+            `INSERT INTO tasks (id, user_id, project_id, title, project_title, due_date, completed)
+             VALUES (?, ?, ?, ?, ?, ?, 0)`,
+            [id, user_id, selectedProjectId, taskTitle, projectTitle, due_date || null]
         );
 
-        const task = await queryOne('SELECT * FROM tasks WHERE id = ?', [id]);
+        const task = await queryOne(
+            `SELECT t.*, u.name as member_name, u.email as member_email,
+                    COALESCE(p.title, t.project_title) as project_title,
+                    COALESCE(t.project_id, p.id) as project_id
+             FROM tasks t
+             JOIN users u ON t.user_id = u.id
+             LEFT JOIN projects p ON t.project_id = p.id
+             WHERE t.id = ?`,
+            [id]
+        );
         res.status(201).json({ success: true, message: 'Task assigned successfully.', task });
     } catch (error) {
         console.error('createTask error:', error);
@@ -96,15 +138,18 @@ exports.createTask = async (req, res) => {
 
 /**
  * GET /api/tasks (Admin only)
- * List all tasks across the club with member details
+ * List all tasks across the club with member and project details
  */
 exports.getAllTasks = async (req, res) => {
     try {
         const { user_id, completed } = req.query;
         let sql = `
-            SELECT t.*, u.name as member_name, u.email as member_email
+            SELECT t.*, u.name as member_name, u.email as member_email,
+                   COALESCE(p.title, t.project_title) as project_title,
+                   COALESCE(t.project_id, p.id) as project_id
             FROM tasks t
             JOIN users u ON t.user_id = u.id
+            LEFT JOIN projects p ON t.project_id = p.id
         `;
         const conditions = [];
         const args = [];

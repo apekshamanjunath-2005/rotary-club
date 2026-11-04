@@ -1,7 +1,7 @@
 const { createClient } = require('@libsql/client');
 const fs = require('fs');
 const path = require('path');
-const { migrateMembershipApplications, migrateServiceRequests } = require('./migrateMembershipSchema');
+const { migrateMembershipApplications, migrateServiceRequests, migrateTasks } = require('./migrateMembershipSchema');
 require('dotenv').config();
 
 // Load database connection URL and Auth Token from .env
@@ -71,6 +71,7 @@ async function initDatabase() {
         // Run safe incremental migrations for existing tables first
         await migrateMembershipApplications(execute, query);
         await migrateServiceRequests(execute, query);
+        await migrateTasks(execute, query);
 
         const schemaPath = path.join(__dirname, '..', 'schema.sql');
         if (fs.existsSync(schemaPath)) {

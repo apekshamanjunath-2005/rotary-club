@@ -643,21 +643,15 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Task Title *</label>
-                    <input type="text" id="task-title" required placeholder="e.g. Coordinate venue logistics for health camp"
-                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Project *</label>
+                    <select id="task-project-id" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold bg-white focus:ring-2 focus:ring-rotary-azure">
+                        <option value="">Select a project...</option>
+                    </select>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Associated Project (Optional)</label>
-                        <input type="text" id="task-project" placeholder="e.g. Mega Health Camp"
-                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Due Date (Optional)</label>
-                        <input type="date" id="task-due-date"
-                               class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Due Date (Optional)</label>
+                    <input type="date" id="task-due-date"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rotary-azure">
                 </div>
                 <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100">
                     <button type="button" id="task-modal-cancel" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50">Cancel</button>

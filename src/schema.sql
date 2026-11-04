@@ -132,16 +132,19 @@ CREATE TABLE IF NOT EXISTS membership_applications (
 CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
+    project_id TEXT,
     title TEXT NOT NULL,
     project_title TEXT,
     due_date TEXT,
     completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_tasks_user ON tasks(user_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
 
 -- 9. CONTACT INQUIRIES TABLE
 CREATE TABLE IF NOT EXISTS contacts (

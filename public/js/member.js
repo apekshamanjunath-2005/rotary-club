@@ -311,7 +311,7 @@ function renderTasks() {
                         <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 font-medium">
                             ${task.project_title ? `
                                 <span class="px-2 py-0.5 rounded-full bg-blue-50 text-rotary-blue font-semibold">
-                                    <i class="fa-solid fa-folder-open mr-1"></i>${escapeHtml(task.project_title)}
+                                    <i class="fa-solid fa-folder-open mr-1"></i>Project: ${escapeHtml(task.project_title)}
                                 </span>
                             ` : ''}
                             ${task.due_date ? `

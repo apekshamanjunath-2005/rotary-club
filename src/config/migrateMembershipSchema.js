@@ -59,7 +59,25 @@ async function migrateServiceRequests(execute, query) {
     }
 }
 
+async function migrateTasks(execute, query) {
+    try {
+        const columnsInfo = await query('PRAGMA table_info(tasks)');
+        const existingColumnNames = columnsInfo.map(col => col.name);
+
+        if (!existingColumnNames.includes('project_id')) {
+            await execute('ALTER TABLE tasks ADD COLUMN project_id TEXT');
+            console.log('✅ Added missing project_id column to tasks table.');
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Safe migration error on tasks:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     migrateMembershipApplications,
-    migrateServiceRequests
+    migrateServiceRequests,
+    migrateTasks
 };

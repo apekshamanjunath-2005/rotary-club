@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAdminStats();
     await loadAdminEvents();
     loadActiveMembers(); // Prefetch active members for assignment modals
+    populateTaskProjectDropdown(); // Prefetch projects for task assignment modal
 });
 
 // ==================== NAVIGATION & HEADER ====================
@@ -95,7 +96,7 @@ function initTabs() {
             if (tabName === 'events') await loadAdminEvents();
             if (tabName === 'service-requests') await loadAdminServiceRequests();
             if (tabName === 'memberships') await loadAdminMemberships();
-            if (tabName === 'tasks') await loadAdminTasks();
+            if (tabName === 'tasks') await Promise.all([loadAdminTasks(), populateTaskProjectDropdown()]);
             if (tabName === 'projects') await loadAdminProjects();
             if (tabName === 'leaders') await loadAdminLeaders();
             if (tabName === 'contacts') await loadAdminContacts();
@@ -556,6 +557,7 @@ window.openReviewModal = (appId, candidateName, initialDecision) => {
 
 // ==================== TAB: MEMBER TASKS ====================
 let currentTaskFilter = '';
+let cachedProjectsForTasks = [];
 
 async function loadActiveMembers() {
     try {
@@ -580,6 +582,37 @@ function populateMemberDropdowns() {
         cachedMembers.map(m => `
             <option value="${m.id}">${escapeHtml(m.name)} (${escapeHtml(m.email)})${m.role === 'ADMIN' ? ' [Admin]' : ''}</option>
         `).join('');
+}
+
+async function populateTaskProjectDropdown() {
+    const taskProjectSelect = document.getElementById('task-project-id');
+    if (!taskProjectSelect) return;
+
+    const taskSaveBtn = document.getElementById('task-save-btn');
+
+    try {
+        const res = await ProjectsAPI.getAll();
+        cachedProjectsForTasks = res.projects || [];
+
+        if (cachedProjectsForTasks.length === 0) {
+            taskProjectSelect.innerHTML = '<option value="">No projects available. Please create a project first.</option>';
+            taskProjectSelect.disabled = true;
+            if (taskSaveBtn) taskSaveBtn.disabled = true;
+            return;
+        }
+
+        taskProjectSelect.disabled = false;
+        if (taskSaveBtn) taskSaveBtn.disabled = false;
+        taskProjectSelect.innerHTML = '<option value="">Select a project...</option>' +
+            cachedProjectsForTasks.map(p => `
+                <option value="${escapeHtml(p.id)}">${escapeHtml(p.title)}</option>
+            `).join('');
+    } catch (err) {
+        console.error('Failed to populate task project dropdown:', err);
+        taskProjectSelect.innerHTML = '<option value="">Failed to load projects</option>';
+        taskProjectSelect.disabled = true;
+        if (taskSaveBtn) taskSaveBtn.disabled = true;
+    }
 }
 
 async function loadAdminTasks(completedFilter = currentTaskFilter) {
@@ -627,7 +660,7 @@ async function loadAdminTasks(completedFilter = currentTaskFilter) {
                                 </span>
                                 ${t.project_title ? `
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-rotary-blue font-semibold text-[11px]">
-                                        <i class="fa-solid fa-folder-open mr-1"></i>${escapeHtml(t.project_title)}
+                                        <i class="fa-solid fa-folder-open mr-1"></i>Project: ${escapeHtml(t.project_title)}
                                     </span>
                                 ` : ''}
                                 ${t.due_date ? `
@@ -725,6 +758,7 @@ async function loadAdminProjects() {
         `).join('');
 
         window._adminProjectsCache = projects;
+        populateTaskProjectDropdown();
 
     } catch (err) {
         console.error('Failed to load projects:', err);
@@ -1088,7 +1122,10 @@ function initModals() {
     // Task Modal
     document.getElementById('btn-create-task')?.addEventListener('click', async () => {
         document.getElementById('task-form').reset();
-        await loadActiveMembers();
+        await Promise.all([
+            loadActiveMembers(),
+            populateTaskProjectDropdown()
+        ]);
         openModal('task-modal');
     });
     document.getElementById('task-modal-close')?.addEventListener('click', () => closeModal('task-modal'));
@@ -1234,14 +1271,31 @@ function initModals() {
     document.getElementById('task-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('task-save-btn');
+        const userId = document.getElementById('task-user-id')?.value;
+        const projectId = document.getElementById('task-project-id')?.value;
+        const dueDate = document.getElementById('task-due-date')?.value || undefined;
+
+        if (!userId) {
+            showToast('Please select an active member.', 'error');
+            return;
+        }
+
+        if (!projectId) {
+            if (cachedProjectsForTasks.length === 0) {
+                showToast('No projects available. Please create a project first.', 'error');
+            } else {
+                showToast('Please select a project for this task.', 'error');
+            }
+            return;
+        }
+
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span>Assigning...</span>`;
 
         const payload = {
-            user_id: document.getElementById('task-user-id').value,
-            title: document.getElementById('task-title').value.trim(),
-            project_title: document.getElementById('task-project').value.trim() || undefined,
-            due_date: document.getElementById('task-due-date').value || undefined
+            user_id: userId,
+            project_id: projectId,
+            due_date: dueDate
         };
 
         try {
