@@ -32,7 +32,7 @@ async function seed() {
             title: 'Pink Rickshaw Livelihood Project',
             description: 'Empowering women in Honavar by donating pink auto-rickshaws as a sustainable source of independent livelihood and safe local transit.',
             category: 'past',
-            cover_image: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=800&q=80'
+            cover_image: '/images/pink-rickshaw.jpg'
         },
         {
             id: 'proj_02',
@@ -92,7 +92,7 @@ async function seed() {
             status: 'completed',
             is_published: 1,
             photos: [
-                'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&w=800&q=80',
+                '/images/pink-rickshaw.jpg',
                 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=800&q=80'
             ]
