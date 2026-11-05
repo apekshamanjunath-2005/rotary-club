@@ -89,7 +89,8 @@ PORT=5000
 TURSO_DATABASE_URL=libsql://your-turso-database.turso.io
 TURSO_AUTH_TOKEN=your_turso_auth_token_here
 JWT_SECRET=your_jwt_secret_key_change_in_production
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token_here
+BLOB_READ_WRITE_TOKEN=your_vercel_blob_rw_token_here
+BLOB_STORE_ID=your_vercel_blob_store_id_here
 ```
 
 ### 3. Install Dependencies
