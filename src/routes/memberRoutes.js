@@ -23,6 +23,7 @@ router.get('/active-members', authMiddleware, adminMiddleware, memberController.
 router.get('/', authMiddleware, adminMiddleware, memberController.getApplications);
 router.get('/:id', authMiddleware, adminMiddleware, memberController.getApplicationById);
 router.patch('/:id/review', authMiddleware, adminMiddleware, memberController.reviewApplication);
+router.delete('/:id', authMiddleware, adminMiddleware, memberController.deleteApplication);
 
 module.exports = router;
 

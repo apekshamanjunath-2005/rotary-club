@@ -395,3 +395,28 @@ exports.getActiveMembers = async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to retrieve active members.' });
     }
 };
+
+/**
+ * DELETE /api/memberships/:id (Admin only)
+ * Permanently delete a candidate membership application
+ */
+exports.deleteApplication = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const existing = await queryOne('SELECT id, name FROM membership_applications WHERE id = ?', [id]);
+        if (!existing) {
+            return res.status(404).json({ success: false, error: 'Membership application not found.' });
+        }
+
+        await execute('DELETE FROM membership_applications WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: `Membership application for ${existing.name} deleted successfully.`
+        });
+    } catch (error) {
+        console.error('deleteApplication error:', error);
+        res.status(500).json({ success: false, error: 'Failed to delete membership application.' });
+    }
+};

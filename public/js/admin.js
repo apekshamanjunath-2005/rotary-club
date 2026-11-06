@@ -393,18 +393,27 @@ async function loadAdminServiceRequests(status = '') {
                     ` : ''}
 
                     <!-- Triage Actions -->
-                    <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3">
-                        <select onchange="window.updateSrStatus('${req.id}', this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold">
-                            <option value="">Update Status...</option>
-                            <option value="NEW">Set NEW</option>
-                            <option value="UNDER_REVIEW">Set UNDER REVIEW</option>
-                            <option value="ACTION_TAKEN">Set ACTION TAKEN</option>
-                            <option value="COMPLETED">Set COMPLETED</option>
-                            <option value="REJECTED">Set REJECTED</option>
-                        </select>
+                    <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <select onchange="window.updateSrStatus('${req.id}', this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold">
+                                <option value="">Update Status...</option>
+                                <option value="NEW">Set NEW</option>
+                                <option value="UNDER_REVIEW">Set UNDER REVIEW</option>
+                                <option value="ACTION_TAKEN">Set ACTION TAKEN</option>
+                                <option value="COMPLETED">Set COMPLETED</option>
+                                <option value="REJECTED">Set REJECTED</option>
+                            </select>
 
-                        <button onclick="window.addSrNotesPrompt('${req.id}')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50">
-                            <i class="fa-solid fa-comment-dots mr-1"></i> Edit Notes
+                            <button onclick="window.addSrNotesPrompt('${req.id}')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50">
+                                <i class="fa-solid fa-comment-dots mr-1"></i> Edit Notes
+                            </button>
+                        </div>
+
+                        <button onclick="window.deleteServiceRequest('${req.id}')"
+                                class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition flex items-center space-x-1.5"
+                                title="Delete Request">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <span>Delete</span>
                         </button>
                     </div>
                 </div>
@@ -415,6 +424,19 @@ async function loadAdminServiceRequests(status = '') {
         console.error('Failed to load service requests:', err);
     }
 }
+
+window.deleteServiceRequest = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
+    try {
+        const res = await ServicesAPI.deleteRequest(id);
+        showToast(res.message || 'Service request deleted successfully.', 'success');
+        const activeFilter = document.querySelector('.sr-filter.active')?.dataset.status || '';
+        await loadAdminServiceRequests(activeFilter);
+        await loadAdminStats();
+    } catch (err) {
+        showToast(err.message || 'Failed to delete service request.', 'error');
+    }
+};
 
 window.updateSrStatus = async (id, status) => {
     if (!status) return;
@@ -514,15 +536,15 @@ async function loadAdminMemberships(status = 'PENDING') {
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs text-slate-500">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
                         <div>
                             <i class="fa-solid fa-envelope mr-1 text-rotary-azure"></i>${escapeHtml(app.email)}
                             <span class="mx-2">•</span>
                             <i class="fa-solid fa-phone mr-1 text-rotary-azure"></i>${escapeHtml(app.phone || 'N/A')}
                         </div>
 
-                        ${isPending ? `
-                            <div class="flex space-x-2">
+                        <div class="flex items-center space-x-2">
+                            ${isPending ? `
                                 <button onclick="window.openReviewModal('${app.id}', '${escapeHtml(app.name)}', 'APPROVED')"
                                         class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-sm">
                                     <i class="fa-solid fa-check mr-1"></i> Approve Member
@@ -531,12 +553,19 @@ async function loadAdminMemberships(status = 'PENDING') {
                                         class="px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 hover:bg-rose-50 font-bold transition">
                                     Reject
                                 </button>
-                            </div>
-                        ` : `
-                            <span class="text-xs text-slate-400 font-semibold italic">
-                                Reviewed: ${formatDate(app.reviewed_at)} ${app.review_notes ? `("${escapeHtml(app.review_notes)}")` : ''}
-                            </span>
-                        `}
+                            ` : `
+                                <span class="text-xs text-slate-400 font-semibold italic mr-2">
+                                    Reviewed: ${formatDate(app.reviewed_at)} ${app.review_notes ? `("${escapeHtml(app.review_notes)}")` : ''}
+                                </span>
+                            `}
+
+                            <button onclick="window.deleteMembershipApplication('${app.id}')"
+                                    class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition flex items-center space-x-1.5"
+                                    title="Delete Application">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <span>Delete</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -546,6 +575,19 @@ async function loadAdminMemberships(status = 'PENDING') {
         console.error('Failed to load memberships:', err);
     }
 }
+
+window.deleteMembershipApplication = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
+    try {
+        const res = await MembershipAPI.deleteApplication(id);
+        showToast(res.message || 'Membership application deleted successfully.', 'success');
+        const activeFilter = document.querySelector('.m-filter.active')?.dataset.status ?? 'PENDING';
+        await loadAdminMemberships(activeFilter);
+        await loadAdminStats();
+    } catch (err) {
+        showToast(err.message || 'Failed to delete membership application.', 'error');
+    }
+};
 
 window.openReviewModal = (appId, candidateName, initialDecision) => {
     document.getElementById('review-app-id').value = appId;
@@ -963,14 +1005,15 @@ window.markContactStatus = async (id, status) => {
 };
 
 window.deleteContactInquiry = async (id) => {
-    if (!confirm('Delete this inquiry?')) return;
+    if (!window.confirm('Are you sure you want to delete this request? This action cannot be undone.')) return;
     try {
-        await ServicesAPI.deleteContact(id);
-        showToast('Inquiry deleted.', 'success');
-        await loadAdminContacts();
+        const res = await ServicesAPI.deleteContact(id);
+        showToast(res.message || 'Contact inquiry deleted successfully.', 'success');
+        const activeFilter = document.querySelector('.cnt-filter.active')?.dataset.status || '';
+        await loadAdminContacts(activeFilter);
         await loadAdminStats();
     } catch (err) {
-        showToast(err.message, 'error');
+        showToast(err.message || 'Failed to delete inquiry.', 'error');
     }
 };
 

@@ -451,3 +451,28 @@ exports.assignServiceRequest = async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to assign service request.' });
     }
 };
+
+/**
+ * DELETE /api/service-requests/:id (Admin only)
+ * Permanently delete a civic service request / complaint
+ */
+exports.deleteServiceRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const existing = await queryOne('SELECT id, tracking_code FROM service_requests WHERE id = ?', [id]);
+        if (!existing) {
+            return res.status(404).json({ success: false, error: 'Service request not found.' });
+        }
+
+        await execute('DELETE FROM service_requests WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: `Service request ${existing.tracking_code} deleted successfully.`
+        });
+    } catch (error) {
+        console.error('deleteServiceRequest error:', error);
+        res.status(500).json({ success: false, error: 'Failed to delete service request.' });
+    }
+};

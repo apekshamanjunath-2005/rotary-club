@@ -135,6 +135,8 @@ export const ServicesAPI = {
         apiFetch(`/service-requests/${id}/status`, { method: 'PATCH', body: { status, admin_notes } }),
     assignRequest: (id, assigned_member_id) =>
         apiFetch(`/service-requests/${id}/assign`, { method: 'PATCH', body: { assigned_member_id } }),
+    deleteRequest: (id) =>
+        apiFetch(`/service-requests/${id}`, { method: 'DELETE' }),
     submitContact: (data) => apiFetch('/contacts', { method: 'POST', body: data }),
     getContacts: (status) => apiFetch(`/contacts${status ? `?status=${status}` : ''}`),
     updateContactStatus: (id, status) => apiFetch(`/contacts/${id}/status`, { method: 'PATCH', body: { status } }),
@@ -148,6 +150,8 @@ export const MembershipAPI = {
     getApplicationById: (id) => apiFetch(`/memberships/${id}`),
     reviewApplication: (id, status, review_notes) =>
         apiFetch(`/memberships/${id}/review`, { method: 'PATCH', body: { status, review_notes } }),
+    deleteApplication: (id) =>
+        apiFetch(`/memberships/${id}`, { method: 'DELETE' }),
     getActiveMembers: () => apiFetch('/memberships/active-members'),
     getMyTasks: () => apiFetch('/tasks/my-tasks'),
     toggleTask: (id) => apiFetch(`/tasks/${id}/toggle`, { method: 'PATCH' }),

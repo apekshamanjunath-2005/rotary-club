@@ -16,5 +16,6 @@ router.get('/:id', authMiddleware, memberMiddleware, serviceController.getServic
 // Admin-only mutation endpoints
 router.patch('/:id/status', authMiddleware, adminMiddleware, serviceController.updateServiceRequestStatus);
 router.patch('/:id/assign', authMiddleware, adminMiddleware, serviceController.assignServiceRequest);
+router.delete('/:id', authMiddleware, adminMiddleware, serviceController.deleteServiceRequest);
 
 module.exports = router;
