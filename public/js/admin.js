@@ -469,12 +469,17 @@ window.addSrNotesPrompt = async (id) => {
 };
 
 // ==================== TAB 3: MEMBERSHIP APPLICATIONS REVIEW ====================
-async function loadAdminMemberships(status = 'PENDING') {
+async function loadAdminMemberships(status = null) {
     const container = document.getElementById('admin-memberships-list');
     if (!container) return;
 
+    // Use explicitly passed status, or read active filter pill, defaulting to '' (All)
+    const activeFilter = status !== null
+        ? status
+        : (document.querySelector('.m-filter.active')?.dataset.status ?? '');
+
     try {
-        const data = await MembershipAPI.getApplications(status);
+        const data = await MembershipAPI.getApplications(activeFilter);
         const apps = data.applications || [];
 
         if (apps.length === 0) {
@@ -581,7 +586,7 @@ window.deleteMembershipApplication = async (id) => {
     try {
         const res = await MembershipAPI.deleteApplication(id);
         showToast(res.message || 'Membership application deleted successfully.', 'success');
-        const activeFilter = document.querySelector('.m-filter.active')?.dataset.status ?? 'PENDING';
+        const activeFilter = document.querySelector('.m-filter.active')?.dataset.status ?? '';
         await loadAdminMemberships(activeFilter);
         await loadAdminStats();
     } catch (err) {
@@ -657,6 +662,19 @@ async function populateTaskProjectDropdown() {
     }
 }
 
+window.openAssignTaskForMember = async (userId = '') => {
+    document.getElementById('task-form')?.reset();
+    await Promise.all([
+        loadActiveMembers(),
+        populateTaskProjectDropdown()
+    ]);
+    if (userId) {
+        const userSelect = document.getElementById('task-user-id');
+        if (userSelect) userSelect.value = userId;
+    }
+    openModal('task-modal');
+};
+
 async function loadAdminTasks(completedFilter = currentTaskFilter) {
     currentTaskFilter = completedFilter !== undefined ? completedFilter : '';
     const container = document.getElementById('admin-tasks-list');
@@ -666,67 +684,163 @@ async function loadAdminTasks(completedFilter = currentTaskFilter) {
         const data = await MembershipAPI.getAllTasks(null, currentTaskFilter !== '' ? currentTaskFilter : undefined);
         const tasks = data.tasks || [];
 
-        if (tasks.length === 0) {
+        // Group rows by member (user_id) to avoid duplicate member entries
+        const memberMap = new Map();
+
+        for (const row of tasks) {
+            const memberId = row.user_id || row.member_id;
+            if (!memberId) continue;
+
+            if (!memberMap.has(memberId)) {
+                memberMap.set(memberId, {
+                    id: memberId,
+                    name: row.member_name || 'Rotarian',
+                    email: row.member_email || '',
+                    role: row.member_role || 'MEMBER',
+                    phone: row.member_phone || '',
+                    tasks: []
+                });
+            }
+
+            // If this row contains an assigned task (not a NULL task row from LEFT JOIN)
+            if (row.id || row.task_id) {
+                memberMap.get(memberId).tasks.push({
+                    id: row.id || row.task_id,
+                    title: row.title,
+                    completed: row.completed,
+                    due_date: row.due_date,
+                    project_title: row.project_title,
+                    project_id: row.project_id
+                });
+            }
+        }
+
+        const members = Array.from(memberMap.values());
+
+        if (members.length === 0) {
             container.innerHTML = `
                 <div class="py-12 text-center text-slate-400 text-xs bg-slate-50 rounded-2xl border border-slate-100">
-                    <i class="fa-solid fa-list-check text-2xl text-slate-300 mb-2 block"></i>
-                    No tasks found under this filter.
+                    <i class="fa-solid fa-users text-2xl text-slate-300 mb-2 block"></i>
+                    No registered members found.
                 </div>`;
             return;
         }
 
-        container.innerHTML = tasks.map(t => {
-            const isDone = t.completed === 1;
+        container.innerHTML = members.map(m => {
+            const hasTasks = m.tasks.length > 0;
+            const completedCount = m.tasks.filter(t => t.completed === 1).length;
+            const pendingCount = m.tasks.length - completedCount;
+
             return `
-                <div class="p-4 rounded-2xl border transition duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 ${isDone ? 'bg-slate-50 border-slate-200 opacity-80' : 'bg-white border-slate-200 shadow-sm hover:border-rotary-blue'}">
-                    <div class="flex items-start space-x-3.5 flex-1 min-w-0">
-                        <div class="mt-0.5">
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                                <i class="fa-solid ${isDone ? 'fa-check' : 'fa-hourglass-half'}"></i>
-                            </span>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-300 transition duration-150">
+                    <!-- Member Header -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-rotary-blue flex items-center justify-center font-bold text-sm shrink-0 border border-blue-100">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="text-sm font-bold font-heading text-slate-900 truncate">
+                                        Member: ${escapeHtml(m.name)}
+                                    </h4>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${m.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'}">
+                                        ${m.role}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-400 flex items-center space-x-2 truncate">
+                                    <span>${escapeHtml(m.email)}</span>
+                                    ${m.phone ? `<span class="text-slate-300">•</span><span>${escapeHtml(m.phone)}</span>` : ''}
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-1.5 flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h4 class="text-sm font-bold ${isDone ? 'line-through text-slate-500' : 'text-slate-900'}">
-                                    ${escapeHtml(t.title)}
-                                </h4>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                                    ${isDone ? 'Completed' : 'Pending'}
-                                </span>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                                <span class="inline-flex items-center font-semibold text-slate-700">
-                                    <i class="fa-solid fa-user mr-1.5 text-rotary-blue"></i>
-                                    ${escapeHtml(t.member_name || 'Rotarian')}
-                                    <span class="text-slate-400 font-normal ml-1">(${escapeHtml(t.member_email || '')})</span>
-                                </span>
-                                ${t.project_title ? `
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 text-rotary-blue font-semibold text-[11px]">
-                                        <i class="fa-solid fa-folder-open mr-1"></i>Project: ${escapeHtml(t.project_title)}
-                                    </span>
-                                ` : ''}
-                                ${t.due_date ? `
-                                    <span class="inline-flex items-center text-slate-500 text-[11px]">
-                                        <i class="fa-solid fa-calendar mr-1 text-slate-400"></i>Due: ${formatDate(t.due_date)}
-                                    </span>
-                                ` : ''}
-                            </div>
+
+                        <div class="flex items-center space-x-2 shrink-0">
+                            ${hasTasks ? `
+                                <div class="text-[11px] font-semibold text-slate-500 mr-2">
+                                    <span class="text-amber-600 font-bold">${pendingCount} Pending</span>
+                                    <span class="text-slate-300 mx-1">/</span>
+                                    <span class="text-emerald-600 font-bold">${completedCount} Completed</span>
+                                </div>
+                            ` : ''}
+                            <button onclick="window.openAssignTaskForMember('${m.id}')"
+                                    class="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rotary-blue hover:text-rotary-blue text-slate-700 font-semibold text-xs transition flex items-center space-x-1.5 bg-slate-50 hover:bg-blue-50/50 shadow-2xs"
+                                    title="Assign task to ${escapeHtml(m.name)}">
+                                <i class="fa-solid fa-plus text-[10px]"></i>
+                                <span>Assign Task</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-2 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                        <button onclick="window.toggleAdminTask('${t.id}')"
-                                class="px-3 py-1.5 rounded-lg border text-xs font-semibold transition flex items-center space-x-1 ${isDone ? 'border-slate-300 text-slate-600 hover:bg-slate-100' : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}"
-                                title="${isDone ? 'Mark as Pending' : 'Mark as Completed'}">
-                            <i class="fa-solid ${isDone ? 'fa-rotate-left' : 'fa-check'}"></i>
-                            <span>${isDone ? 'Mark Pending' : 'Complete'}</span>
-                        </button>
-                        <button onclick="window.deleteAdminTask('${t.id}')"
-                                class="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition flex items-center space-x-1"
-                                title="Delete Task">
-                            <i class="fa-solid fa-trash-can"></i>
-                            <span>Delete</span>
-                        </button>
+                    <!-- Assigned Tasks Section -->
+                    <div class="space-y-2">
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-list-check text-slate-400"></i>
+                            <span>Assigned Tasks</span>
+                        </div>
+
+                        ${!hasTasks ? `
+                            <div class="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div class="flex items-center space-x-2.5 text-xs">
+                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-[11px]">
+                                        <i class="fa-solid fa-circle-minus"></i>
+                                    </span>
+                                    <span class="font-bold text-slate-600">No Task Assigned</span>
+                                </div>
+                                <span class="text-[11px] text-slate-400 italic">No community initiatives currently assigned to this member.</span>
+                            </div>
+                        ` : `
+                            <div class="space-y-2">
+                                ${m.tasks.map(t => {
+                                    const isDone = t.completed === 1;
+                                    return `
+                                        <div class="p-3.5 rounded-xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isDone ? 'bg-slate-50/80 border-slate-200 opacity-80' : 'bg-white border-slate-200 hover:border-rotary-blue shadow-2xs'}">
+                                            <div class="flex items-start space-x-3 min-w-0 flex-1">
+                                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 mt-0.5 ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                                                    <i class="fa-solid ${isDone ? 'fa-check' : 'fa-hourglass-half'}"></i>
+                                                </span>
+                                                <div class="space-y-1 min-w-0 flex-1">
+                                                    <div class="flex flex-wrap items-center gap-2">
+                                                        <h5 class="text-xs font-bold ${isDone ? 'line-through text-slate-500' : 'text-slate-900'}">
+                                                            ${escapeHtml(t.title)}
+                                                        </h5>
+                                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                                                            ${isDone ? 'Completed' : 'Pending'}
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                                                        ${t.project_title ? `
+                                                            <span class="inline-flex items-center text-rotary-blue font-semibold">
+                                                                <i class="fa-solid fa-folder-open mr-1 text-[10px]"></i>Project: ${escapeHtml(t.project_title)}
+                                                            </span>
+                                                        ` : ''}
+                                                        ${t.due_date ? `
+                                                            <span class="inline-flex items-center text-slate-500">
+                                                                <i class="fa-solid fa-calendar mr-1 text-[10px] text-slate-400"></i>Due: ${formatDate(t.due_date)}
+                                                            </span>
+                                                        ` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex items-center space-x-1.5 shrink-0 self-end sm:self-center pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                                <button onclick="window.toggleAdminTask('${t.id}')"
+                                                        class="px-2.5 py-1 rounded-lg border text-xs font-semibold transition flex items-center space-x-1 ${isDone ? 'border-slate-300 text-slate-600 hover:bg-slate-100' : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100'}"
+                                                        title="${isDone ? 'Mark as Pending' : 'Mark as Completed'}">
+                                                    <i class="fa-solid ${isDone ? 'fa-rotate-left' : 'fa-check'} text-[10px]"></i>
+                                                    <span>${isDone ? 'Pending' : 'Complete'}</span>
+                                                </button>
+                                                <button onclick="window.deleteAdminTask('${t.id}')"
+                                                        class="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition"
+                                                        title="Delete Task">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
                     </div>
                 </div>
             `;
@@ -1163,13 +1277,8 @@ function initModals() {
     document.getElementById('review-modal-close')?.addEventListener('click', () => closeModal('review-modal'));
 
     // Task Modal
-    document.getElementById('btn-create-task')?.addEventListener('click', async () => {
-        document.getElementById('task-form').reset();
-        await Promise.all([
-            loadActiveMembers(),
-            populateTaskProjectDropdown()
-        ]);
-        openModal('task-modal');
+    document.getElementById('btn-create-task')?.addEventListener('click', () => {
+        window.openAssignTaskForMember();
     });
     document.getElementById('task-modal-close')?.addEventListener('click', () => closeModal('task-modal'));
     document.getElementById('task-modal-cancel')?.addEventListener('click', () => closeModal('task-modal'));
@@ -1303,7 +1412,9 @@ function initModals() {
             const res = await MembershipAPI.reviewApplication(appId, status, review_notes);
             showToast(res.message || `Application ${status.toLowerCase()}.`, 'success');
             closeModal('review-modal');
-            await loadAdminMemberships();
+            const activeFilter = document.querySelector('.m-filter.active')?.dataset.status ?? '';
+            await loadAdminMemberships(activeFilter);
+            await loadAdminTasks();
             await loadAdminStats();
         } catch (err) {
             showToast(err.message, 'error');

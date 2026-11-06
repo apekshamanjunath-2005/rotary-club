@@ -386,7 +386,7 @@ exports.getActiveMembers = async (req, res) => {
         const members = await query(
             `SELECT id, name, email, role, phone, membership_end_date
              FROM users
-             WHERE role IN ('MEMBER', 'ADMIN') AND is_active = 1
+             WHERE is_active = 1
              ORDER BY name ASC`
         );
         res.json({ success: true, count: members.length, members });

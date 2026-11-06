@@ -138,37 +138,59 @@ exports.createTask = async (req, res) => {
 
 /**
  * GET /api/tasks (Admin only)
- * List all tasks across the club with member and project details
+ * List all registered club members and their assigned tasks.
+ * Uses a SQL LEFT JOIN to ensure members without assigned tasks are also returned.
  */
 exports.getAllTasks = async (req, res) => {
     try {
         const { user_id, completed } = req.query;
+
+        // Base query: All registered active members (users) LEFT JOIN tasks and projects
         let sql = `
-            SELECT t.*, u.name as member_name, u.email as member_email,
-                   COALESCE(p.title, t.project_title) as project_title,
-                   COALESCE(t.project_id, p.id) as project_id
-            FROM tasks t
-            JOIN users u ON t.user_id = u.id
-            LEFT JOIN projects p ON t.project_id = p.id
+            SELECT 
+                u.id as user_id,
+                u.id as member_id,
+                u.name as member_name,
+                u.email as member_email,
+                u.role as member_role,
+                u.phone as member_phone,
+                t.id as id,
+                t.id as task_id,
+                t.title,
+                t.completed,
+                t.due_date,
+                t.created_at as task_created_at,
+                t.updated_at as task_updated_at,
+                COALESCE(p.title, t.project_title) as project_title,
+                COALESCE(t.project_id, p.id) as project_id
+            FROM users u
         `;
-        const conditions = [];
+
         const args = [];
 
-        if (user_id) {
-            conditions.push('t.user_id = ?');
-            args.push(user_id);
+        // Apply completion status filter on the LEFT JOIN condition
+        // so members are preserved while task filtering works properly
+        if (completed !== undefined && completed !== '') {
+            sql += ` LEFT JOIN tasks t ON u.id = t.user_id AND t.completed = ?`;
+            args.push(completed === '1' || completed === 'true' ? 1 : 0);
+        } else {
+            sql += ` LEFT JOIN tasks t ON u.id = t.user_id`;
         }
 
-        if (completed !== undefined) {
-            conditions.push('t.completed = ?');
-            args.push(completed === '1' || completed === 'true' ? 1 : 0);
+        sql += ` LEFT JOIN projects p ON t.project_id = p.id`;
+
+        const conditions = ['u.is_active = 1'];
+
+        if (user_id) {
+            conditions.push('u.id = ?');
+            args.push(user_id);
         }
 
         if (conditions.length > 0) {
             sql += ' WHERE ' + conditions.join(' AND ');
         }
 
-        sql += ' ORDER BY t.created_at DESC';
+        sql += ' ORDER BY u.name ASC, t.completed ASC, t.created_at DESC';
 
         const tasks = await query(sql, args);
         res.json({ success: true, count: tasks.length, tasks });

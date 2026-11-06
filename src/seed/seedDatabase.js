@@ -1,31 +1,35 @@
 const bcrypt = require('bcryptjs');
-const { initDatabase, execute, query } = require('../config/db');
+const { initDatabase, execute, query, queryOne } = require('../config/db');
 
+/**
+ * Safe, Non-Destructive, and Idempotent Database Seeder
+ * - Verifies database tables and runs non-destructive schema migrations.
+ * - Seeds default initial records ONLY if they do not already exist.
+ * - NEVER deletes or overwrites existing users, membership applications, tasks, or community submissions.
+ */
 async function seed() {
-    console.log('🌱 Starting database seeding for Rotary Club of Honavar...');
+    console.log('🌱 Starting non-destructive database seeding for Rotary Club of Honavar...');
 
-    // 1. Ensure all tables exist
+    // 1. Ensure all tables exist and safe migrations have completed
     await initDatabase();
 
-    // 2. Clear existing sample data to prevent duplicate seeds
-    await execute('DELETE FROM event_photos');
-    await execute('DELETE FROM events');
-    await execute('DELETE FROM projects');
-    await execute('DELETE FROM leaders');
-    await execute('DELETE FROM tasks');
-    await execute('DELETE FROM users');
+    // 2. Ensure Default Administrator exists (non-destructive check)
+    let admin = await queryOne('SELECT id FROM users WHERE email = ?', ['admin@rotaryhonavar.org']);
+    let adminId = admin ? admin.id : 'usr_admin_01';
 
-    // 3. Create Default Administrator
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const adminId = 'usr_admin_01';
-    await execute(
-        `INSERT INTO users (id, name, email, password, role, phone)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [adminId, 'Club Administrator', 'admin@rotaryhonavar.org', hashedPassword, 'ADMIN', '+91 98765 43210']
-    );
-    console.log('✅ Admin user created: admin@rotaryhonavar.org / admin123');
+    if (!admin) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        await execute(
+            `INSERT INTO users (id, name, email, password, role, phone)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [adminId, 'Club Administrator', 'admin@rotaryhonavar.org', hashedPassword, 'ADMIN', '+91 98765 43210']
+        );
+        console.log('✅ Default admin user created: admin@rotaryhonavar.org / admin123');
+    } else {
+        console.log('ℹ️ Admin user already exists. Preserving existing record.');
+    }
 
-    // 4. Create Signature Community Projects
+    // 3. Ensure Signature Community Projects exist
     const projects = [
         {
             id: 'proj_01',
@@ -57,16 +61,21 @@ async function seed() {
         }
     ];
 
+    let projectsInserted = 0;
     for (const p of projects) {
-        await execute(
-            `INSERT INTO projects (id, title, description, category, cover_image, created_by_id)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [p.id, p.title, p.description, p.category, p.cover_image, adminId]
-        );
+        const existing = await queryOne('SELECT id FROM projects WHERE id = ?', [p.id]);
+        if (!existing) {
+            await execute(
+                `INSERT INTO projects (id, title, description, category, cover_image, created_by_id)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [p.id, p.title, p.description, p.category, p.cover_image, adminId]
+            );
+            projectsInserted++;
+        }
     }
-    console.log(`✅ ${projects.length} Community projects seeded.`);
+    console.log(`✅ Projects checked (${projectsInserted} inserted, ${projects.length - projectsInserted} already present).`);
 
-    // 5. Create Events & Multi-Photo Galleries
+    // 4. Ensure Signature Events & Multi-Photo Galleries exist
     const events = [
         {
             id: 'evt_01',
@@ -111,25 +120,33 @@ async function seed() {
         }
     ];
 
+    let eventsInserted = 0;
     for (const e of events) {
-        await execute(
-            `INSERT INTO events (id, title, description, event_date, location, category, status, is_published)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [e.id, e.title, e.description, e.event_date, e.location, e.category, e.status, e.is_published]
-        );
-
-        // Insert gallery photos linked by foreign key
-        for (let i = 0; i < e.photos.length; i++) {
+        const existingEvent = await queryOne('SELECT id FROM events WHERE id = ?', [e.id]);
+        if (!existingEvent) {
             await execute(
-                `INSERT INTO event_photos (id, event_id, image_url, order_num)
-                 VALUES (?, ?, ?, ?)`,
-                [`photo_${e.id}_${i}`, e.id, e.photos[i], i]
+                `INSERT INTO events (id, title, description, event_date, location, category, status, is_published)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [e.id, e.title, e.description, e.event_date, e.location, e.category, e.status, e.is_published]
             );
+            eventsInserted++;
+
+            for (let i = 0; i < e.photos.length; i++) {
+                const photoId = `photo_${e.id}_${i}`;
+                const existingPhoto = await queryOne('SELECT id FROM event_photos WHERE id = ?', [photoId]);
+                if (!existingPhoto) {
+                    await execute(
+                        `INSERT INTO event_photos (id, event_id, image_url, order_num)
+                         VALUES (?, ?, ?, ?)`,
+                        [photoId, e.id, e.photos[i], i]
+                    );
+                }
+            }
         }
     }
-    console.log(`✅ ${events.length} Events seeded with gallery photos.`);
+    console.log(`✅ Events checked (${eventsInserted} inserted, ${events.length - eventsInserted} already present).`);
 
-    // 6. Create Club Leadership Team (2025-2026)
+    // 5. Ensure Club Leadership Team exists
     const leaders = [
         { id: 'ldr_01', name: 'Rtn. Rajesh Kumar', position: 'President', rotary_year: '2025-2026', order_num: 1, image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80' },
         { id: 'ldr_02', name: 'Rtn. Priya Shetty', position: 'Secretary', rotary_year: '2025-2026', order_num: 2, image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80' },
@@ -137,20 +154,24 @@ async function seed() {
         { id: 'ldr_04', name: 'Rtn. Anjali Rao', position: 'Club Service Director', rotary_year: '2025-2026', order_num: 4, image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80' }
     ];
 
+    let leadersInserted = 0;
     for (const l of leaders) {
-        await execute(
-            `INSERT INTO leaders (id, name, position, rotary_year, order_num, image)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [l.id, l.name, l.position, l.rotary_year, l.order_num, l.image]
-        );
+        const existingLeader = await queryOne('SELECT id FROM leaders WHERE id = ?', [l.id]);
+        if (!existingLeader) {
+            await execute(
+                `INSERT INTO leaders (id, name, position, rotary_year, order_num, image)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [l.id, l.name, l.position, l.rotary_year, l.order_num, l.image]
+            );
+            leadersInserted++;
+        }
     }
-    console.log(`✅ ${leaders.length} Leadership team members seeded.`);
+    console.log(`✅ Leadership team checked (${leadersInserted} inserted, ${leaders.length - leadersInserted} already present).`);
 
-    console.log('\n🎉 Seeding completed successfully!');
+    console.log('\n🎉 Non-destructive seeding completed successfully. All user accounts, applications, and tasks preserved.');
 }
 
 seed().catch(err => {
     console.error('❌ Seeding failed:', err);
     process.exit(1);
 });
-
